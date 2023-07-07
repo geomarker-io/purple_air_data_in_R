@@ -3,7 +3,9 @@ title: "PurpleAir Data Exploration"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
 date: "June 30, 2023"
-format: html
+format:
+  html:
+    output-file: "index.html"
 toc: true
 toc-expand: true
 toc-title: Contents
@@ -255,7 +257,7 @@ Display a map of the 1-hour average PM~2.5~ measurement for each sensor:
 <!--# The leaflets are not rendering correctly in Quarto, due to a recent 'knitr' update. Will need to fix this problem soon. -->
 
 ```{r leaflet_pm25}
-#| eval: true
+#| eval: false
 # Plot interactive leaflet map of 1-hour average PM2.5
 pas %>%
   pas_leaflet(parameter="pm2.5_60minute")
