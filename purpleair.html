@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Stephen Colegate">
+<meta name="dcterms.date" content="2023-06-30">
+
+<title>PurpleAir Data Exploration</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="purpleair_files/libs/clipboard/clipboard.min.js"></script>
+<script src="purpleair_files/libs/quarto-html/quarto.js"></script>
+<script src="purpleair_files/libs/quarto-html/popper.min.js"></script>
+<script src="purpleair_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="purpleair_files/libs/quarto-html/anchor.min.js"></script>
+<link href="purpleair_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="purpleair_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="purpleair_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="purpleair_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="purpleair_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#sec-intro" id="toc-sec-intro" class="nav-link active" data-scroll-target="#sec-intro"><span class="header-section-number">1</span> Introduction</a>
+  <ul class="collapse">
+  <li><a href="#sec-installR" id="toc-sec-installR" class="nav-link" data-scroll-target="#sec-installR"><span class="header-section-number">1.1</span> Installing R and RStudio</a></li>
+  <li><a href="#sec-quarto" id="toc-sec-quarto" class="nav-link" data-scroll-target="#sec-quarto"><span class="header-section-number">1.2</span> Opening and Using this Document</a></li>
+  <li><a href="#packages" id="toc-packages" class="nav-link" data-scroll-target="#packages"><span class="header-section-number">1.3</span> Packages</a>
+  <ul class="collapse">
+  <li><a href="#sec-packages-install" id="toc-sec-packages-install" class="nav-link" data-scroll-target="#sec-packages-install">Installing R Packages</a></li>
+  <li><a href="#sec-packages-load" id="toc-sec-packages-load" class="nav-link" data-scroll-target="#sec-packages-load">Loading R Packages</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#sec-synoptic" id="toc-sec-synoptic" class="nav-link" data-scroll-target="#sec-synoptic"><span class="header-section-number">2</span> Synoptic Data</a>
+  <ul class="collapse">
+  <li><a href="#sec-loadingPAS" id="toc-sec-loadingPAS" class="nav-link" data-scroll-target="#sec-loadingPAS"><span class="header-section-number">2.1</span> Loading PAS Data</a>
+  <ul class="collapse">
+  <li><a href="#sec-live" id="toc-sec-live" class="nav-link" data-scroll-target="#sec-live">Live Source</a></li>
+  <li><a href="#sec-archive" id="toc-sec-archive" class="nav-link" data-scroll-target="#sec-archive">Archive Source</a></li>
+  </ul></li>
+  <li><a href="#sec-PAS-explore" id="toc-sec-PAS-explore" class="nav-link" data-scroll-target="#sec-PAS-explore"><span class="header-section-number">2.2</span> Exploring Spatial Data</a></li>
+  </ul></li>
+  <li><a href="#sec-timeseries" id="toc-sec-timeseries" class="nav-link" data-scroll-target="#sec-timeseries"><span class="header-section-number">3</span> Time Series Data</a>
+  <ul class="collapse">
+  <li><a href="#sec-pat" id="toc-sec-pat" class="nav-link" data-scroll-target="#sec-pat">Loading the Data</a></li>
+  <li><a href="#sec-PAT-explore" id="toc-sec-PAT-explore" class="nav-link" data-scroll-target="#sec-PAT-explore"><span class="header-section-number">3.1</span> Exploring Temporal Data</a></li>
+  </ul></li>
+  <li><a href="#sec-thanks" id="toc-sec-thanks" class="nav-link" data-scroll-target="#sec-thanks"><span class="header-section-number">4</span> Acknowledgements</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">5</span> References</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">PurpleAir Data Exploration</h1>
+<p class="subtitle lead">RISE Presentation</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Stephen Colegate </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 30, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="sec-intro" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>Air quality sensors have the potential to provide high spatial and temporal resolution data and their accessibility in terms of cost and ease of use <span class="citation" data-cites="collier-oxandale2022">(<a href="#ref-collier-oxandale2022" role="doc-biblioref">Collier-Oxandale et al. 2022</a>)</span>. Open access to environmental data sets and related tools is possible through a stable and consistent Application Programming Interface (API) that allows software and application developers to build applications to display and report that data in transparent and meaningful ways <span class="citation" data-cites="feenstra2020">(<a href="#ref-feenstra2020" role="doc-biblioref">Feenstra et al. 2020</a>)</span>.</p>
+<p>In this document, we will present methods of accessing synoptic and time series data using R software with the <code>AirSensor</code> package from the PurpleAir interface <span class="citation" data-cites="AirSensor">(<a href="#ref-AirSensor" role="doc-biblioref">Callahan, Martin, et al. 2023</a>)</span>. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.</p>
+<section id="sec-installR" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="sec-installR"><span class="header-section-number">1.1</span> Installing R and RStudio</h2>
+<p><u><em>NOTE</em></u><em>: If you already have R and RStudio installed on your computer, you may skip this section.</em></p>
+<p>R is a free, open-source software program that is available for Windows, Macs and Linux operating systems <span class="citation" data-cites="rcoreteam2013">(<a href="#ref-rcoreteam2013" role="doc-biblioref">R Core Team 2013</a>)</span>. The latest version of R available as of the time of this writing is R-4.3.1. You can install R on your computer by going to <a href="https://cran.r-project.org/" class="uri">https://cran.r-project.org/</a> and selecting the R version that is appropriate for your operating system. Download the <code>base</code> distribution of R from the website and follow the prompts to install R on your computer.</p>
+<p>After installing R on your computer, you will also need to install <a href="https://posit.co/download/rstudio-desktop/">RStudio Desktop</a> - an integrated development environment (IDE) to help data scientists be more productive with R <span class="citation" data-cites="rstudioteam2020a">(<a href="#ref-rstudioteam2020a" role="doc-biblioref">RStudio Team 2020</a>)</span>. RStudio is a dashboard hosted by <a href="https://posit.co/">posit</a> that allows ease of access to using R, especially if you are using R for the first time. The posit website link should automatically direct you to the appropriate version of RStudio you will need to download and install on your computer. Once you have both R and RStudio installed, open up the RStudio software.</p>
+</section>
+<section id="sec-quarto" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="sec-quarto"><span class="header-section-number">1.2</span> Opening and Using this Document</h2>
+<!--# Insert the URL for our GitHub page here. -->
+<p>Download the <code>purpleair.QMD</code> and the <code>purpleair.bib</code> file from our GitHub page by clicking here. Save both files in the same file location on your computer. Click on the <code>purpleair.QMD</code> file to open it.</p>
+<p>This kind of document allow us to display R code and output while also explaining what the R code does. R code is displayed in R code chunks like the following example below. To execute the entirety of an R code chunk, click on the green arrow button at the top right of the R code chunk.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Click the green arrow button on the right to run this code</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>x <span class="ot">&lt;-</span> <span class="dv">2</span>    <span class="co"># assign the letter 'x' the value 2</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="dv">9</span>    <span class="co"># assign the letter 'y' the value 9</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>x <span class="sc">+</span> y     <span class="co"># equivalent to '2' + '9'</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sqrt</span>(y)   <span class="co"># sqrt = square-root</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The grey arrow with a green bar icon runs all R code chucks above the current chunk. This is useful for executing R code that is usually needed to run the current R code chunk - operations such as loading R packages, importing data into the R environment, and loading R objects. As an example, if you had run the following code chuck below without running the one above, an error will result because the R objects x and y have not been assigned at this point.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This code block requires the previous block to be run first</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>x<span class="sc">*</span>y     <span class="co"># multiplication</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>x<span class="sc">/</span>y     <span class="co"># division</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>y<span class="sc">^</span>x     <span class="co"># exponentiation</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">log</span>(y)  <span class="co"># natural log (ln(x))</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Optionally, you can render the entire document and have it displayed nicely on your default HTML viewer. Click on the <strong>Render</strong> button to compile the document. RStudio then begins the process of rendering the document. Once this is complete, an HTML viewer will automatically open and show you the rendered document. Here you can see all the code and output that would be generated if you ran every R code chunk.</p>
+<p><u><em>NOTE</em></u><em>: You must have both</em> <code>purpleair.QMD</code> <em>and</em> <code>purpleair.bib</code> <em>files saved in the same folder location on your computer to render the document.</em></p>
+</section>
+<section id="packages" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="packages"><span class="header-section-number">1.3</span> Packages</h2>
+<p>R packages are extensions to the base R environment, allowing the user to import data, functions, code, documentation and objects other creators have compiled. These packages are hosted on a centralized software repository such as the <a href="https://cran.r-project.org/">Comprehensive R Archive Network (CRAN)</a>.</p>
+<section id="sec-packages-install" class="level3">
+<h3 class="anchored" data-anchor-id="sec-packages-install">Installing R Packages</h3>
+<p>Installing packages is easy and usually requires a one-time installation process. You will need to install the following packages in an R session in order to use the following code in this vignette:</p>
+<ul>
+<li><p><a href="https://cran.r-project.org/web/packages/dplyr/dplyr.pdf"><code>dplyr</code></a>: a fast, consistent tool for working with data <span class="citation" data-cites="dplyr">(<a href="#ref-dplyr" role="doc-biblioref">Wickham et al. 2023</a>)</span>.</p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/ggplot2/ggplot2.pdf"><code>ggplot2</code></a>: a system for creating graphics <span class="citation" data-cites="ggplot2">(<a href="#ref-ggplot2" role="doc-biblioref">Wickham 2016</a>)</span>.</p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/MazamaCoreUtils/MazamaCoreUtils.pdf"><code>MazamaCoreUtils</code></a>: a suite of utility functions for working with AirSensor package <span class="citation" data-cites="MazamaCoreUtils">(<a href="#ref-MazamaCoreUtils" role="doc-biblioref">Callahan 2023a</a>)</span>.</p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/MazamaSpatialUtils/MazamaSpatialUtils.pdf"><code>MazamaSpatialUtils</code></a>: a suite of conversion function to return spatial polygon data <span class="citation" data-cites="MazamaSpatialUtils">(<a href="#ref-MazamaSpatialUtils" role="doc-biblioref">Callahan, Carroll, et al. 2023</a>)</span>.</p></li>
+<li><p><a href="https://github.com/MazamaScience/AirSensor"><code>AirSensor</code></a>: package for processing and displaying data from PurpleAir <span class="citation" data-cites="AirSensor">(<a href="#ref-AirSensor" role="doc-biblioref">Callahan, Martin, et al. 2023</a>)</span>.</p></li>
+</ul>
+<p>To install these R packages, simply run the following code below.</p>
+<p><u><em>NOTE</em></u><em>: You may need to restart the R session in order for these packages to successfully install. If this is the case, select <strong>Yes</strong> when prompted to restart the R session. You may have to rerun the R code chunks again after restarting the session.</em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># This only needs to be run once to install</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">'dplyr'</span>, <span class="st">'ggplot2'</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Install the 'AirSensor' package</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"MazamaScience/AirSensor"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="sec-packages-load" class="level3">
+<h3 class="anchored" data-anchor-id="sec-packages-load">Loading R Packages</h3>
+<p>Once R packages have been installed, you must then load the R package in the R environment. To do this, use the function <code>library()</code> along with the package name.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load required R packages</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MazamaCoreUtils)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MazamaSpatialUtils)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(AirSensor)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><u><em>NOTE</em></u><em>: Unlike the installation process where the packages are installed only once, you must load these packages every time you start a new R session. When you quit your R session and start a fresh session, you must reload the R packages again.</em></p>
+</section>
+</section>
+</section>
+<section id="sec-synoptic" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Synoptic Data</h1>
+<p><strong>Synoptic data</strong> provides a synopsis - a comprehensive view of something at a moment in time. Synoptic data takes a snapshot of data from all the PurpleAir sensors at a moment in time and uploads them to the cloud. <strong>Spatial data</strong> utilizes synoptic data to visualize data in different spacial locations (such as across the United States) at a given moment. Spatial data from PurpleAir sensors are stored on the cloud as <strong>PurpleAir Synoptic (PAS)</strong> data.</p>
+<p>This vignette demonstrates an example workflow for exploring air quality synoptic data using the AirSensor R package and data captured by the PurpleAir air quality sensors <span class="citation" data-cites="callahan_pas_2023">(<a href="#ref-callahan_pas_2023" role="doc-biblioref">Callahan 2023b</a>)</span>. Spatial data from PurpleAir will be downloaded from the PurpleAir API dashboard. We will then explore the spatial data by creating maps of air quality and temperature information.</p>
+<section id="sec-loadingPAS" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="sec-loadingPAS"><span class="header-section-number">2.1</span> Loading PAS Data</h2>
+<p>There are two various was to obtaining PurpleAir Synoptic (PAS) data to use with this vignette. You can create a PAS object using the latest available PurpleAir sensor data from the PurpleAir website within your R environment. This method requires the user to create an account with PurpleAir and obtain an <strong>Application Programming Interface (API)</strong> key unique to the user to make specific queries. You can also pull an archived PAS object of historic PurpleAir data which accomplishes the same task.</p>
+<section id="sec-live" class="level3">
+<h3 class="anchored" data-anchor-id="sec-live">Live Source</h3>
+<p>The <a href="https://community.purpleair.com/t/new-api-dashboard/3981"><strong>PurpleAir API dashboard</strong></a> allows users to create and manage their API keys and their usage. The site is available at <a href="https://develop.purpleair.com/home">develop.purpleair.com</a>. The dashboard requires a Gmail or Google-associated account to sign in.</p>
+<section id="sec-createProject" class="level4">
+<h4 class="anchored" data-anchor-id="sec-createProject">Create a Project</h4>
+<p>First create a project by following these steps:</p>
+<ol type="1">
+<li>Sign in to <a href="https://develop.purpleair.com/home">develop.purpleair.com</a> using a Gmail or Google-associated account.</li>
+<li>Click <strong>Projects</strong> on the left-hand side of the page.</li>
+<li>Click on <strong>Add</strong> in the top right-hand corner of the page.</li>
+<li>Enter in a project name.</li>
+<li>You must allocate points to your new project. New users begin with 1 million free points that they can allocate to any project. When an API query is executed in R, points will be deducted from this allocation based on the type of data being requested. Additional points may be purchased on the PurpleAir website. More information about how points are allocated and used can be found <a href="https://community.purpleair.com/t/api-pricing/4523">here</a>.</li>
+<li>Click <strong>Add</strong>.</li>
+</ol>
+<p>Once a project has been created, you can then create an API key for that project.</p>
+</section>
+<section id="sec-createAPI" class="level4">
+<h4 class="anchored" data-anchor-id="sec-createAPI">Create API Key</h4>
+<p>To obtain your unique API key follow these steps:</p>
+<ol type="1">
+<li>Sign in to <a href="https://develop.purpleair.com/home">develop.purpleair.com</a> using a Gmail or Google-associated account.</li>
+<li>Click <strong>API Keys</strong> on the left-hand side of the page.</li>
+<li>Click on <strong>Add</strong> in the top right-hand corner of the page.</li>
+<li>You should see the auto-populated project name you created earlier (<a href="#sec-createProject">Section&nbsp;2.1.1.1</a>). You can have several projects and API keys. Select the appropriate project if you have multiple projects.</li>
+<li>Select <strong>Read</strong> under “Type”, select <strong>Enabled</strong> under “Status” , and leave all the other fields blank.</li>
+<li>Click <strong>Add</strong>.</li>
+</ol>
+<p>You should then see your unique API key for the project. You can modify the allocation of points and examine the usage of the API key and its allocated points at any time.</p>
+<p><u><em>NOTE</em></u><em>: API keys are issued per user, not per sensor. Make sure that you have allocated points to the project associated with the API key before continuing on.</em></p>
+</section>
+<section id="sec-createPAS" class="level4">
+<h4 class="anchored" data-anchor-id="sec-createPAS">Create a New PAS Data Using API Key</h4>
+<p>PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80 seconds prior to a May 31, 2019 firmware upgrade.) Data are processed by PurpleAir and a version of the data is displayed on the PurpleAir website.</p>
+<p>You can generate a current PAS object by using the <code>pas_createNew()</code> function. A PAS object is large data frame with a record for each PurupleAir sensor channel (2 channels per sensor). The <code>pas_createNew()</code> function performs the following tasks under the hood:</p>
+<ol type="1">
+<li><p>Download a raw dataset of the entire PurpleAir network that includes both metadata and recent PM2.5 averages for each deployed sensor across the globe. See <code>downloadParseSynopticData()</code> for more info.</p></li>
+<li><p>Subset and enhance the raw dataset by replacing variables with more consistent, human readable names and adding spatial metadata for each sensor including the nearest official air quality monitor. For a more in depth explanation, see <code>enhanceSynopticData()</code>.</p></li>
+</ol>
+<p>To create a new PAS object you must first properly initialize the <code>MazamaSpatialUtils</code> package. This requires all the required R packages to be loaded into the R environment first (<a href="#sec-packages-load">Section&nbsp;1.3.2</a>).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialization</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">initializeMazamaSpatialUtils</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The following example will create a brand new PAS object with up-to-the-minute data. Replace the text <strong>INSERT API KEY</strong> with your unique API key in quotes (<a href="#sec-createAPI">Section&nbsp;2.1.1.2</a>) before running this code below.</p>
+<p><u><em>NOTE</em></u><em>: You must have the appropriate number of points allocated to the API key in order for the PAS object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.</em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create new PAS object</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>pas_live <span class="ot">&lt;-</span> <span class="fu">pas_createNew</span>(<span class="at">api_key=</span><span class="st">"INSERT API KEY"</span>, <span class="co"># replace with your API key</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                          <span class="at">countryCodes=</span><span class="st">"US"</span>,        <span class="co"># country codes</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                          <span class="at">stateCodes=</span><span class="st">"OH"</span>,          <span class="co"># state codes</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                          <span class="at">counties=</span><span class="st">"Hamilton"</span>,      <span class="co"># counties</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                          <span class="at">lookbackDays=</span><span class="dv">7</span>,           <span class="co"># number of days to look back</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                          <span class="at">location_type=</span><span class="cn">NULL</span>)       <span class="co"># 0 - outside; 1 - inside, NULL - both</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><u><em>NOTE</em></u><em>: Creating a PAS object can take up to a minute to process.</em></p>
+<!--# This section will be expanded upon later once we are familiar with using API Keys. -->
+</section>
+</section>
+<section id="sec-archive" class="level3">
+<h3 class="anchored" data-anchor-id="sec-archive">Archive Source</h3>
+<p>It is also possible to load pre-generated PAS objects from a data archive specified by a URL in the <code>setArchiveBaseUrl()</code> function. Specify the name of the URL in quotes, as in the example below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set location of pre-generated data files</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">setArchiveBaseUrl</span>(<span class="st">"https://airfire-data-exports.s3-us-west-2.amazonaws.com/PurpleAir/v1"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Archived PAS objects can be loaded very quickly with the <code>pas_load()</code> function, which obtains PAS objects from the archive specified with <code>setArchvieBaseUrl()</code>. When used without specifying the <code>datestamp</code> argument, <code>pas_load()</code> will obtain the most recently processed PAS object. But you can also use the <code>datestamp</code> argument inside <code>pas_load()</code> to load an archived PAS object from a specified date.</p>
+<p>The following example loads a pre-generated PAS object from April 10, 2020 from the above archive base URL:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load a 'pas' object from a specific date</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>pas_apr10<span class="fl">.2020</span> <span class="ot">&lt;-</span> <span class="fu">pas_load</span>(<span class="at">datestamp=</span><span class="st">"20200410"</span>)   <span class="co"># '20200410' = '4-10-2020'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="sec-PAS-explore" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="sec-PAS-explore"><span class="header-section-number">2.2</span> Exploring Spatial Data</h2>
+<p><u><em>NOTE</em></u><em>: All the following R code chunks can be adapted to your own PAS object you create live (<a href="#sec-live">Section&nbsp;2.1.1</a>) or archived (<a href="#sec-archive">Section&nbsp;2.1.2</a>). For this demonstration, we will be using the example PAS from the AirSensor package to avoid long waiting times. The example PAS was generated on March 15, 2023 for outside sensors in California.</em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example PAS from AirSensor package</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>pas <span class="ot">&lt;-</span> AirSensor<span class="sc">::</span>example_pas</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><em>For more information about the example PAS, run the code below. This opens up a help documentation describing how this PAS is generated:</em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Open help documentation for example PAS</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">help</span>(example_pas)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Take a look at the first 10 rows of the PAS data frame:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examine the first 10 rows</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pas, <span class="at">n=</span><span class="dv">10</span>, <span class="at">max_footer_lines=</span><span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 71 × 59
+   deviceDeploymentID    deviceID locationID     locationName longitude latitude
+   &lt;chr&gt;                 &lt;chr&gt;    &lt;chr&gt;          &lt;chr&gt;            &lt;dbl&gt;    &lt;dbl&gt;
+ 1 9895b71fbbf35c6d_1748 1748     9895b71fbbf35… SCUV_09          -118.     34.0
+ 2 95a6c622a9a72fea_1860 1860     95a6c622a9a72… SCSB_02          -122.     37.1
+ 3 af12e32be721b523_1914 1914     af12e32be721b… SCSB_13          -118.     33.8
+ 4 af0fa502ab6a6f67_1922 1922     af0fa502ab6a6… SCSB_11          -118.     33.8
+ 5 cc5d102d7e3ad2e3_2018 2018     cc5d102d7e3ad… SCSB_03          -118.     33.8
+ 6 b63ed404a9340eb9_2020 2020     b63ed404a9340… SCSB_07          -118.     33.8
+ 7 1cd3e0285ecbd56d_2025 2025     1cd3e0285ecbd… SCSB_05          -118.     33.8
+ 8 037f24ed1bc09882_2169 2169     037f24ed1bc09… SCSB_31          -118.     33.8
+ 9 725fc0be432ca440_2303 2303     725fc0be432ca… SCSB_26          -118.     33.8
+10 e2a73db743ea5437_2307 2307     e2a73db743ea5… SCSB_17          -118.     33.8</code></pre>
+</div>
+</div>
+<p>There are 71 columns and 59 columns of the data frame. Not every column and row is displayed here. Each row of the PAS object corresponds to a unique PurpleAir sensor, identified by the <code>deviceDeploymentID</code> column, at this one moment in time. Each sensor records several columns of data, which we can take a look at below:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get list of column names</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(pas)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "deviceDeploymentID"     "deviceID"               "locationID"            
+ [4] "locationName"           "longitude"              "latitude"              
+ [7] "elevation"              "countryCode"            "stateCode"             
+[10] "countyName"             "timezone"               "houseNumber"           
+[13] "street"                 "city"                   "zip"                   
+[16] "sensor_index"           "last_modified"          "date_created"          
+[19] "last_seen"              "privacy"                "name"                  
+[22] "location_type"          "model"                  "hardware"              
+[25] "led_brightness"         "firmware_version"       "firmware_upgrade"      
+[28] "rssi"                   "uptime"                 "pa_latency"            
+[31] "memory"                 "position_rating"        "altitude"              
+[34] "channel_state"          "channel_flags"          "channel_flags_manual"  
+[37] "channel_flags_auto"     "confidence"             "confidence_auto"       
+[40] "confidence_manual"      "humidity"               "temperature"           
+[43] "pressure"               "pm2.5_10minute"         "pm2.5_30minute"        
+[46] "pm2.5_60minute"         "pm2.5_6hour"            "pm2.5_24hour"          
+[49] "pm2.5_1week"            "sensorManufacturer"     "ID"                    
+[52] "label"                  "sensorType"             "pm25"                  
+[55] "targetPollutant"        "technologyType"         "pwfsl_closestDistance" 
+[58] "pwfsl_closestMonitorID" "communityRegion"       </code></pre>
+</div>
+</div>
+<p>At a glance, the PAS has several useful columns of data we can explore. There are column recordings of temperature, relative humidity, pressure, and air quality.</p>
+<p>We are interested in PM<sub>2.5</sub> (particulate matter smaller than 2.5 micrometers in diameter). There are 6 columns related to PM<sub>2.5</sub> measurements. These are average PM<sub>2.5</sub> measurements taken by the sensor for a certain period of time. Notice how each column starts with the prefix <code>pm2.5</code>. We can pull only those columns that begin with this prefix and store them as a new R object. Each row corresponds to one sensor so it is also a good idea to include the <code>locationID</code> of each sensor with our new <code>pm25</code> object.</p>
+<p><u><em>NOTE</em></u><em>: The variable names of your PAS object may differ slightly from the examples provided here. Make sure you adapt the variable names such as <code>locationID</code> and <code>pm2.5_</code> exactly (case-sensitive, spelling, punctuation) so they match as specified in your PAS object.</em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Take a look at only PM2.5 data</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>pm25 <span class="ot">&lt;-</span> pas <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(locationID, <span class="fu">starts_with</span>(<span class="st">"pm2.5_"</span>))</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pm25, <span class="at">n=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 71 × 7
+   locationID       pm2.5_10minute pm2.5_30minute pm2.5_60minute pm2.5_6hour
+   &lt;chr&gt;                     &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt;
+ 1 9895b71fbbf35c6d            0.1            0.7            0.9         5.9
+ 2 95a6c622a9a72fea            0.2            0.2            0.2         0.8
+ 3 af12e32be721b523            1              0.6            0.4         2.8
+ 4 af0fa502ab6a6f67            0.9            0.5            0.4         2.7
+ 5 cc5d102d7e3ad2e3            7.6            5.8            4.2         2.4
+ 6 b63ed404a9340eb9            0.6            0.3            0.2         2.1
+ 7 1cd3e0285ecbd56d            0.9            0.4            0.4         2.8
+ 8 037f24ed1bc09882            1.2            0.6            0.4         3.1
+ 9 725fc0be432ca440            0.9            0.4            0.4         2.7
+10 e2a73db743ea5437            1.7            1.2            1           3.8
+# ℹ 61 more rows
+# ℹ 2 more variables: pm2.5_24hour &lt;dbl&gt;, pm2.5_1week &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<p>Each row of this new <code>pm25_data</code> object corresponds to one PurpleAir sensor at a given location. Now that we have our PM<sub>2.5</sub> data setup, we can now create maps to explore PM<sub>2.5</sub> observations by location.</p>
+<p>Display a map of the 1-hour average PM<sub>2.5</sub> measurement for each sensor:</p>
+<!--# The leaflets are not rendering correctly in Quarto, due to a recent 'knitr' update. Will need to fix this problem soon. -->
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot interactive leaflet map of 1-hour average PM2.5</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>pas <span class="sc">%&gt;%</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pas_leaflet</span>(<span class="at">parameter=</span><span class="st">"pm2.5_60minute"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>A map is shown of all the sensors with their 1 hour average PM<sub>2.5</sub> measurements. The icons represent one scanner, colored based on their measurement. Clicking on one of the icons brings up the device’s ID, sensor index, location, temperature, humidity, and average PM<sub>2.5</sub> measurements over a 1-hour and 24-hour period.</p>
+<p>PAS data can consists of many sensors, resulting in many icons to select from in the map. We may wish to filter sensors based on their readings so that only those sensors who meet our filtering criteria appear on the map. This is useful, for example, if we are interested in identifying locations with high PM<sub>2.5</sub> concentrations. The <code>pas_filter()</code> function can be used to filter sensors by state (with stateCode) and by a filtering criterion before it is passed to the <code>pas_leaflet()</code> function. In the example below, we identify PurpleAir sensors in California who register at least a 24-hour PM<sub>2.5</sub> average of 12.0 micrograms per cubic meter - the equivalent of registering a Moderate <a href="https://www.epa.gov/sites/default/files/2016-04/documents/2012_aqi_factsheet.pdf">Air Quality Index (AQI)</a>:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply filtering of sensors</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>?pas_filter</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>pas <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pas_filter</span>(stateCode <span class="sc">==</span> <span class="st">"CA"</span>, pm2<span class="fl">.5</span>_24hour <span class="sc">&gt;</span> <span class="fl">12.0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pas_leaflet</span>(<span class="at">parameter =</span> <span class="st">"pm2.5_24hour"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The PurpleAir sensors not only record PM<sub>2.5</sub> data but they also record temperature and relative humidity as well. The following example displays the (high) temperature reading of all these sensors in California that are not missing:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot interactive map of temperature, removing missing data</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>pas <span class="sc">%&gt;%</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pas_filter</span>(stateCode <span class="sc">==</span> <span class="st">"CA"</span>, <span class="sc">!</span><span class="fu">is.na</span>(temperature)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pas_leaflet</span>(<span class="at">parameter =</span> <span class="st">"temperature"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>It is left as an exercise to plot an interactive map of relative humidity observations for these same sensors.</p>
+</section>
+</section>
+<section id="sec-timeseries" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Time Series Data</h1>
+<p><strong>Time series</strong> data provides a minute-by-minute database structure for transforming and analyzing <a href="https://www.purpleair.com/">PurpleAir</a> sensor data. Unlike spatial data, which is geared for analyzing multiple sensors at one point in time, time series data focuses on a single PurpleAir sensor over time. In this manner, time series data allows the user to examine trends in air quality, temperature, and relative humidity recorded by one sensor.</p>
+<p>In this section, we will demonstrate an example analysis of an individual monitor located in Seattle, Washington over a two-month duration in which the Pacific Northwest experienced <a href="https://www.usnews.com/news/healthiest-communities/articles/2018-08-19/air-quality-to-worsen-in-northwest-as-smoke-returns">hazardous air-quality conditions</a> caused by wildfires in British Columbia, Canada <span class="citation" data-cites="callahan_pat_2023">(<a href="#ref-callahan_pat_2023" role="doc-biblioref">Callahan 2023c</a>)</span>.</p>
+<section id="sec-pat" class="level3">
+<h3 class="anchored" data-anchor-id="sec-pat">Loading the Data</h3>
+<p>PurpleAir sensor readings are uploaded to the cloud every 120 seconds where they are stored for download and display on the PurpleAir website. After every interval, the synoptic data is refreshed and the outdated synoptic data is then stored in a <a href="https://thingspeak.com">ThingSpeak</a> database. In order to access the ThingSpeak channel API we must first load the synoptic database, which was discussed in <a href="#sec-createPAS">Section&nbsp;2.1.1.3</a>.</p>
+<p>Once the PAS data frame has been loaded, we then create a <strong>PurpleAir Time Series (PAT)</strong> object by specifying the sensor and the dates from which to pull data from. Since this requires drawing data from the PurpleAir API dashboard, an API key (<a href="#sec-createAPI">Section&nbsp;2.1.1.2</a>) is required to access this data to create the PAT object.</p>
+<p>The following example will create a brand new PAT object with up-to-the-minute data. Assuming a PAS object has been loaded (<a href="#sec-createPAS">Section&nbsp;2.1.1.3</a>), we use it to create the PAT object with a specific <code>sensor_index</code>. Replace the text <strong>INSERT API KEY</strong> with your unique API key in quotes (<a href="#sec-createAPI">Section&nbsp;2.1.1.2</a>) before running this code below.</p>
+<p><u><em>NOTE</em></u><em>: You must have the appropriate number of points allocated to the API key in order for the PAT object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.</em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Create new PAT object</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>pat <span class="ot">&lt;-</span> <span class="fu">pat_createNew</span>(<span class="at">api_key=</span><span class="st">"INSERT API KEY"</span>, <span class="co"># replace with your API key</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">pas=</span>pas,                                   <span class="co"># Your PAS object name</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">sensor_index=</span><span class="st">"3515"</span>,                       <span class="co"># PurpleAir sensor ID</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">startdate=</span><span class="st">"2022-07-01"</span>,</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">enddate=</span><span class="st">"2022-07-08"</span>,</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">timezone=</span><span class="st">"UTC"</span>,</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">verbose=</span><span class="cn">TRUE</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><u><em>NOTE</em></u><em>: Creating a PAT object can take up to a minute to process.</em></p>
+<!--# This section will be expanded upon later once we are familiar with using API Keys. -->
+</section>
+<section id="sec-PAT-explore" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="sec-PAT-explore"><span class="header-section-number">3.1</span> Exploring Temporal Data</h2>
+<p><u><em>NOTE</em></u><em>: All the following R code chunks can be adapted to your own PAT object you create (<a href="#sec-pat">Section&nbsp;3.0.1</a>). For this demonstration, we will be using the example PAT from the AirSensor package to avoid long waiting times. The example PAT was generated for a specific sensor in Seattle, Washington between July 1, 2022 and July 8, 2022.</em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Example PAT from AirSensor package</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>pat <span class="ot">&lt;-</span> AirSensor<span class="sc">::</span>example_pat</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p><em>For more information about the example PAT, run the code below. This opens up a help documentation describing how this PAT is generated:</em></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Open help documentation for example PAT</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="fu">help</span>(example_pat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s explore the PAT object:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Explore the PAT object</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>pat <span class="sc">%&gt;%</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "meta" "data"</code></pre>
+</div>
+</div>
+<p>The PAT object contains two dataframes:</p>
+<ul>
+<li><p><code>meta</code> - Includes one row of data that does not change over time (e.g., device location, latitude, longitude, state, county, etc.)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Variables that do not change with time</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(pat<span class="sc">$</span>meta)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "deviceDeploymentID"     "deviceID"               "locationID"            
+ [4] "locationName"           "longitude"              "latitude"              
+ [7] "elevation"              "countryCode"            "stateCode"             
+[10] "countyName"             "timezone"               "houseNumber"           
+[13] "street"                 "city"                   "zip"                   
+[16] "sensor_index"           "privacy"                "name"                  
+[19] "location_type"          "model"                  "hardware"              
+[22] "firmware_version"       "firmware_upgrade"       "altitude"              
+[25] "sensorManufacturer"     "ID"                     "label"                 
+[28] "sensorType"             "targetPollutant"        "technologyType"        
+[31] "pwfsl_closestDistance"  "pwfsl_closestMonitorID" "communityRegion"       </code></pre>
+</div>
+</div></li>
+<li><p><code>data</code> - Includes time series data that changes with time. Each row corresponds to a snapshot of data taken from sensor_index 3515 at a certain time (in UTC) and date.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Examine time series data</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(pat<span class="sc">$</span>data, <span class="at">n=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2,424 × 21
+   datetime            sensor_index  rssi uptime pa_latency memory humidity
+   &lt;dttm&gt;                     &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;      &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;
+ 1 2022-07-01 00:04:43         3515   -75   6470       3356   9208       40
+ 2 2022-07-01 00:06:45         3515   -78   6592       1454   8232       40
+ 3 2022-07-01 00:28:37         3515   -78    115         NA  15496       43
+ 4 2022-07-01 00:30:38         3515   -78    235        654  15400       44
+ 5 2022-07-01 00:32:46         3515   -74    357        403  15336       44
+ 6 2022-07-01 00:34:37         3515   -79    475       2938  15336       44
+ 7 2022-07-01 00:36:39         3515   -78    595        622  15336       45
+ 8 2022-07-01 00:38:41         3515   -82    717        589  15336       45
+ 9 2022-07-01 00:40:41         3515   -79    838       3209  15336       45
+10 2022-07-01 00:43:24         3515   -76    955       3296  15032       45
+# ℹ 2,414 more rows
+# ℹ 14 more variables: temperature &lt;dbl&gt;, pressure &lt;dbl&gt;, pm1_atm_A &lt;dbl&gt;,
+#   pm1_atm_B &lt;dbl&gt;, pm25_atm_A &lt;dbl&gt;, pm25_atm_B &lt;dbl&gt;, pm10_atm_A &lt;dbl&gt;,
+#   pm10_atm_B &lt;dbl&gt;, pm25_A &lt;dbl&gt;, pm25_B &lt;dbl&gt;, adc0 &lt;dbl&gt;, bsec_iaq &lt;dbl&gt;,
+#   datetime_A &lt;dttm&gt;, datetime_B &lt;dttm&gt;</code></pre>
+</div>
+</div></li>
+</ul>
+<p>As you can see, the PurpleAir sensor takes frequent measurements of temperature, humidity, and air quality. As the PAT object shows, these measurements change over time. We can take a look at trends for all these measurements by plotting the time series for each variable:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot raw sensor data</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>pat <span class="sc">%&gt;%</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pat_multiplot</span>(<span class="at">plottype=</span><span class="st">"all"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="purpleair_files/figure-html/pat_multiplot-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The <code>plottype</code> option allows the user to select which variable they are interested in seeing a time series of. For PM<sub>2.5</sub>, the measurements are taken by two different channels, labeled <strong>channel A</strong> and <strong>channel B</strong>. These channels record PM<sub>2.5</sub> data. Notice a huge spike in PM<sub>2.5</sub> in both channel B and especially channel A on the night of July 4. Why do you think PM<sub>2.5</sub> levels spiked here?</p>
+<p>PAT objects can span a wide range of dates. Suppose we are only interested in time series observations during the 4th of July weekend (July 2-4, 2022). We can create another PAT object from the original one by filtering out dates covering just these three dates:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter dates from the PAT object</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>pat_fourth <span class="ot">&lt;-</span> pat <span class="sc">%&gt;%</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pat_filterDate</span>(<span class="at">startdate=</span><span class="dv">20220702</span>, <span class="at">enddate=</span><span class="dv">20220705</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Our new PAT object, <code>pat_forth</code>, only covers dates between July 2, 2022 and July 4, 2022 (notice the <code>enddate</code> is July 5 since we want to include all the time points through July 4). Now let’s take a look at only PM<sub>2.5</sub> values more closely during this particular weekend:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot only PM2.5 data covering only the 4th of July weekend 2022</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>pat_fourth <span class="sc">%&gt;%</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pat_multiPlot</span>(<span class="at">plottype =</span> <span class="st">"pm25_over"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="purpleair_files/figure-html/pat_pm25-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>We can see noticeable peaks on the evening of Saturday, July 2, Sunday, July 3 and especially Monday, July 4. Channel A (red) only picks up the PM<sub>2.5</sub> on the evening of July 4 whereas Channel B (blue) detects increased levels of PM<sub>2.5</sub> every night throughout the 4th of July holiday.</p>
+<p>How do the values of the PurpleAir sensor compare with those from a <a href="https://tools.airfire.org/monitoring/v4#!/?category=PM2.5_nowcast&amp;centerlat=42&amp;centerlon=-95&amp;zoom=4">federal monitor</a>? The <code>pat_externalFit()</code> function produces a linear model between data from the PurpleAir sensor and data from the closest federal monitor <span class="citation" data-cites="monitori">(<a href="#ref-monitori" role="doc-biblioref"><span>“Monitoring V4.1.1,”</span> n.d.</a>)</span>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare sensor data with hourly data from federal monitor</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>pat_fourth <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pat_externalFit</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="purpleair_files/figure-html/pat_externalFit-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>If the PurpleAir monitor readings agrees with that of the federal monitor, then we should expect to see a high correlation, or equivalently, a high R<sup>2</sup> value associated with their readings. By comparing the observations made by the PurpleAir monitor to the federal monitor, we see very little difference in PM<sub>2.5</sub> readings between the two. This gives us confidence that the PurpleAir monitor is recording its PM<sub>2.5</sub> observations accurately.</p>
+<p>The <code>AirSensor</code> package also has functions to evaluate the accuracy of the measurements made by the sensor. The <code>pat_outliers()</code> function will scan the PM<sub>2.5</sub> observations and identify any measurements that are considered outliers:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Identify any outliers and replace them with window median values</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>pat_fourth_filter <span class="ot">&lt;-</span> pat_fourth <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pat_outliers</span>(<span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">showPlot =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="purpleair_files/figure-html/pat_outliers-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>The outliers, highlighted in red, are replaced instead with window median values. We can also check the accuracy of the PM<sub>2.5</sub> measurements by comparing how the two channels record PM<sub>2.5</sub> via the correlation of measurements taken between channel A and channel B using <code>pat_internalFit()</code></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Compare Channel A and Channel B of the sensors</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>pat_fourth_filter <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pat_internalFit</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="purpleair_files/figure-html/pat_internalFit-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>A simple linear regression model fits the data from channel B to data from channel A. Ideally, we would like to see a strong negative correlation between temperature and humidity and a strong positive association between channel A and channel B.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Correlations to check that sensors are properly functioning</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>pat_fourth_filter <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pat_scatterPlotMatrix</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="purpleair_files/figure-html/pat_scatterPlotMatrix-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>While the correlation between temperature and humidity appears fine, the correlation between channel A and channel B is not as strong as we would like. This supports our observation of several inconsistent measurements especially on the evenings of July 2-4 between the two channels.</p>
+</section>
+</section>
+<section id="sec-thanks" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Acknowledgements</h1>
+<p>Special thanks to Dr.&nbsp;Cole Brokamp and Dr.&nbsp;Patrick Ryan for allowing me to speak at this workshop.</p>
+</section>
+<section id="references" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-MazamaCoreUtils" class="csl-entry" role="listitem">
+Callahan, Jonathan. 2023a. <span>“MazamaCoreUtils: Utility Functions for Production r Code.”</span> <a href="https://CRAN.R-project.org/package=MazamaCoreUtils">https://CRAN.R-project.org/package=MazamaCoreUtils</a>.
+</div>
+<div id="ref-callahan_pas_2023" class="csl-entry" role="listitem">
+———. 2023b. <span>“<span>AirSensor</span> Pas_introduction.<span>Rmd</span>.”</span> Mazama Science. <a href="https://github.com/MazamaScience/AirSensor">https://github.com/MazamaScience/AirSensor</a>.
+</div>
+<div id="ref-callahan_pat_2023" class="csl-entry" role="listitem">
+———. 2023c. <span>“<span>AirSensor</span> Pat_introduction.<span>Rmd</span>.”</span> Mazama Science. <a href="https://github.com/MazamaScience/AirSensor/blob/master/vignettes/articles/pat_introduction.Rmd">https://github.com/MazamaScience/AirSensor/blob/master/vignettes/articles/pat_introduction.Rmd</a>.
+</div>
+<div id="ref-MazamaSpatialUtils" class="csl-entry" role="listitem">
+Callahan, Jonathan, Rachel Carroll, Eli Grosman, Roger Andre, Tom Bergamaschi, Tina Chen, Ruby Fore, et al. 2023. <span>“MazamaSpatialUtils: Spatial Data Download and Utility Functions.”</span> <a href="https://CRAN.R-project.org/package=MazamaSpatialUtils">https://CRAN.R-project.org/package=MazamaSpatialUtils</a>.
+</div>
+<div id="ref-AirSensor" class="csl-entry" role="listitem">
+Callahan, Jonathan, Hans Martin, Kayleigh Wilson, Tate Brasel, and Helen Miller. 2023. <span>“AirSensor: Process and Display Data from Air Quality Sensors.”</span> <a href="https://CRAN.R-project.org/package=AirSensor">https://CRAN.R-project.org/package=AirSensor</a>.
+</div>
+<div id="ref-collier-oxandale2022" class="csl-entry" role="listitem">
+Collier-Oxandale, Ashley, Brandon Feenstra, Vasileios Papapostolou, and Andrea Polidori. 2022. <span>“<span>AirSensor</span> V1.0: <span>Enhancements</span> to the Open-Source <span>R</span> Package to Enable Deep Understanding of the Long-Term Performance and Reliability of <span>PurpleAir</span> Sensors.”</span> <em>Environmental Modelling &amp; Software</em> 148 (February): 105256. <a href="https://doi.org/10.1016/j.envsoft.2021.105256">https://doi.org/10.1016/j.envsoft.2021.105256</a>.
+</div>
+<div id="ref-feenstra2020" class="csl-entry" role="listitem">
+Feenstra, Brandon, Ashley Collier-Oxandale, Vasileios Papapostolou, David Cocker, and Andrea Polidori. 2020. <span>“The <span>AirSensor</span> Open-Source <span>R</span>-Package and <span>DataViewer</span> Web Application for Interpreting Community Data Collected by Low-Cost Sensor Networks.”</span> <em>Environmental Modelling &amp; Software</em> 134 (December): 104832. <a href="https://doi.org/10.1016/j.envsoft.2020.104832">https://doi.org/10.1016/j.envsoft.2020.104832</a>.
+</div>
+<div id="ref-monitori" class="csl-entry" role="listitem">
+<span>“Monitoring V4.1.1.”</span> n.d. <a href="https://tools.airfire.org/monitoring/v4#!/?category=PM2.5_nowcast&amp;centerlat=42&amp;centerlon=-95&amp;zoom=4">https://tools.airfire.org/monitoring/v4#!/?category=PM2.5_nowcast&amp;centerlat=42&amp;centerlon=-95&amp;zoom=4</a>.
+</div>
+<div id="ref-rcoreteam2013" class="csl-entry" role="listitem">
+R Core Team, R. 2013. <span>“R: <span>A</span> Language and Environment for Statistical Computing.”</span>
+</div>
+<div id="ref-rstudioteam2020a" class="csl-entry" role="listitem">
+RStudio Team. 2020. <em>RStudio: Integrated Development Environment for r</em>. Boston, MA: RStudio, PBC. <a href="http://www.rstudio.com/">http://www.rstudio.com/</a>.
+</div>
+<div id="ref-ggplot2" class="csl-entry" role="listitem">
+Wickham, Hadley. 2016. <span>“Ggplot2: Elegant Graphics for Data Analysis.”</span> <a href="https://ggplot2.tidyverse.org">https://ggplot2.tidyverse.org</a>.
+</div>
+<div id="ref-dplyr" class="csl-entry" role="listitem">
+Wickham, Hadley, Romain François, Lionel Henry, Kirill Müller, and Davis Vaughan. 2023. <span>“Dplyr: A Grammar of Data Manipulation.”</span> <a href="https://CRAN.R-project.org/package=dplyr">https://CRAN.R-project.org/package=dplyr</a>.
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,438 @@
+---
+title: "PurpleAir Data Exploration"
+subtitle: "RISE Presentation"
+author: "Stephen Colegate"
+date: "June 30, 2023"
+format: html
+toc: true
+toc-expand: true
+toc-title: Contents
+editor: visual
+bibliography: purpleair.bib
+number-sections: true
+number-depth: 2
+---
+
+# Introduction {#sec-intro}
+
+Air quality sensors have the potential to provide high spatial and temporal resolution data and their accessibility in terms of cost and ease of use [@collier-oxandale2022]. Open access to environmental data sets and related tools is possible through a stable and consistent Application Programming Interface (API) that allows software and application developers to build applications to display and report that data in transparent and meaningful ways [@feenstra2020].
+
+In this document, we will present methods of accessing synoptic and time series data using R software with the `AirSensor` package from the PurpleAir interface [@AirSensor]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
+
+## Installing R and RStudio {#sec-installR}
+
+[*NOTE*]{.underline}*: If you already have R and RStudio installed on your computer, you may skip this section.*
+
+R is a free, open-source software program that is available for Windows, Macs and Linux operating systems [@rcoreteam2013]. The latest version of R available as of the time of this writing is R-4.3.1. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system. Download the `base` distribution of R from the website and follow the prompts to install R on your computer.
+
+After installing R on your computer, you will also need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an integrated development environment (IDE) to help data scientists be more productive with R [@rstudioteam2020a]. RStudio is a dashboard hosted by [posit](https://posit.co/) that allows ease of access to using R, especially if you are using R for the first time. The posit website link should automatically direct you to the appropriate version of RStudio you will need to download and install on your computer. Once you have both R and RStudio installed, open up the RStudio software.
+
+## Opening and Using this Document {#sec-quarto}
+
+<!--# Insert the URL for our GitHub page here. -->
+
+Download the `purpleair.QMD` and the `purpleair.bib` file from our GitHub page by clicking here. Save both files in the same file location on your computer. Click on the `purpleair.QMD` file to open it.
+
+This kind of document allow us to display R code and output while also explaining what the R code does. R code is displayed in R code chunks like the following example below. To execute the entirety of an R code chunk, click on the green arrow button at the top right of the R code chunk.
+
+```{r example1}
+#| eval: false
+# Click the green arrow button on the right to run this code
+x <- 2    # assign the letter 'x' the value 2
+y <- 9    # assign the letter 'y' the value 9
+x + y     # equivalent to '2' + '9'
+sqrt(y)   # sqrt = square-root
+```
+
+The grey arrow with a green bar icon runs all R code chucks above the current chunk. This is useful for executing R code that is usually needed to run the current R code chunk - operations such as loading R packages, importing data into the R environment, and loading R objects. As an example, if you had run the following code chuck below without running the one above, an error will result because the R objects x and y have not been assigned at this point.
+
+```{r example2}
+#| eval: false
+# This code block requires the previous block to be run first
+x*y     # multiplication
+x/y     # division
+y^x     # exponentiation
+log(y)  # natural log (ln(x))
+```
+
+Optionally, you can render the entire document and have it displayed nicely on your default HTML viewer. Click on the **Render** button to compile the document. RStudio then begins the process of rendering the document. Once this is complete, an HTML viewer will automatically open and show you the rendered document. Here you can see all the code and output that would be generated if you ran every R code chunk.
+
+[*NOTE*]{.underline}*: You must have both* `purpleair.QMD` *and* `purpleair.bib` *files saved in the same folder location on your computer to render the document.*
+
+## Packages
+
+R packages are extensions to the base R environment, allowing the user to import data, functions, code, documentation and objects other creators have compiled. These packages are hosted on a centralized software repository such as the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/).
+
+### Installing R Packages {#sec-packages-install}
+
+Installing packages is easy and usually requires a one-time installation process. You will need to install the following packages in an R session in order to use the following code in this vignette:
+
+-   [`dplyr`](https://cran.r-project.org/web/packages/dplyr/dplyr.pdf): a fast, consistent tool for working with data [@dplyr].
+
+-   [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/ggplot2.pdf): a system for creating graphics [@ggplot2].
+
+-   [`MazamaCoreUtils`](https://cran.r-project.org/web/packages/MazamaCoreUtils/MazamaCoreUtils.pdf): a suite of utility functions for working with AirSensor package [@MazamaCoreUtils].
+
+-   [`MazamaSpatialUtils`](https://cran.r-project.org/web/packages/MazamaSpatialUtils/MazamaSpatialUtils.pdf): a suite of conversion function to return spatial polygon data [@MazamaSpatialUtils].
+
+-   [`AirSensor`](https://github.com/MazamaScience/AirSensor): package for processing and displaying data from PurpleAir [@AirSensor].
+
+To install these R packages, simply run the following code below.
+
+[*NOTE*]{.underline}*: You may need to restart the R session in order for these packages to successfully install. If this is the case, select **Yes** when prompted to restart the R session. You may have to rerun the R code chunks again after restarting the session.*
+
+```{r install_packages}
+#| eval: false
+# This only needs to be run once to install
+install.packages('dplyr', 'ggplot2')
+
+# Install the 'AirSensor' package
+devtools::install_github("MazamaScience/AirSensor")
+```
+
+### Loading R Packages {#sec-packages-load}
+
+Once R packages have been installed, you must then load the R package in the R environment. To do this, use the function `library()` along with the package name.
+
+```{r load_packages}
+#| message: false
+#| warning: false
+# Load required R packages
+library(dplyr)
+library(ggplot2)
+library(MazamaCoreUtils)
+library(MazamaSpatialUtils)
+library(AirSensor)
+```
+
+[*NOTE*]{.underline}*: Unlike the installation process where the packages are installed only once, you must load these packages every time you start a new R session. When you quit your R session and start a fresh session, you must reload the R packages again.*
+
+# Synoptic Data {#sec-synoptic}
+
+**Synoptic data** provides a synopsis - a comprehensive view of something at a moment in time. Synoptic data takes a snapshot of data from all the PurpleAir sensors at a moment in time and uploads them to the cloud. **Spatial data** utilizes synoptic data to visualize data in different spacial locations (such as across the United States) at a given moment. Spatial data from PurpleAir sensors are stored on the cloud as **PurpleAir Synoptic (PAS)** data.
+
+This vignette demonstrates an example workflow for exploring air quality synoptic data using the AirSensor R package and data captured by the PurpleAir air quality sensors [@callahan_pas_2023]. Spatial data from PurpleAir will be downloaded from the PurpleAir API dashboard. We will then explore the spatial data by creating maps of air quality and temperature information.
+
+## Loading PAS Data {#sec-loadingPAS}
+
+There are two various was to obtaining PurpleAir Synoptic (PAS) data to use with this vignette. You can create a PAS object using the latest available PurpleAir sensor data from the PurpleAir website within your R environment. This method requires the user to create an account with PurpleAir and obtain an **Application Programming Interface (API)** key unique to the user to make specific queries. You can also pull an archived PAS object of historic PurpleAir data which accomplishes the same task.
+
+### Live Source {#sec-live}
+
+The [**PurpleAir API dashboard**](https://community.purpleair.com/t/new-api-dashboard/3981) allows users to create and manage their API keys and their usage. The site is available at [develop.purpleair.com](https://develop.purpleair.com/home). The dashboard requires a Gmail or Google-associated account to sign in.
+
+#### Create a Project {#sec-createProject}
+
+First create a project by following these steps:
+
+1.  Sign in to [develop.purpleair.com](https://develop.purpleair.com/home) using a Gmail or Google-associated account.
+2.  Click **Projects** on the left-hand side of the page.
+3.  Click on **Add** in the top right-hand corner of the page.
+4.  Enter in a project name.
+5.  You must allocate points to your new project. New users begin with 1 million free points that they can allocate to any project. When an API query is executed in R, points will be deducted from this allocation based on the type of data being requested. Additional points may be purchased on the PurpleAir website. More information about how points are allocated and used can be found [here](https://community.purpleair.com/t/api-pricing/4523).
+6.  Click **Add**.
+
+Once a project has been created, you can then create an API key for that project.
+
+#### Create API Key {#sec-createAPI}
+
+To obtain your unique API key follow these steps:
+
+1.  Sign in to [develop.purpleair.com](https://develop.purpleair.com/home) using a Gmail or Google-associated account.
+2.  Click **API Keys** on the left-hand side of the page.
+3.  Click on **Add** in the top right-hand corner of the page.
+4.  You should see the auto-populated project name you created earlier (@sec-createProject). You can have several projects and API keys. Select the appropriate project if you have multiple projects.
+5.  Select **Read** under "Type", select **Enabled** under "Status" , and leave all the other fields blank.
+6.  Click **Add**.
+
+You should then see your unique API key for the project. You can modify the allocation of points and examine the usage of the API key and its allocated points at any time.
+
+[*NOTE*]{.underline}*: API keys are issued per user, not per sensor. Make sure that you have allocated points to the project associated with the API key before continuing on.*
+
+#### Create a New PAS Data Using API Key {#sec-createPAS}
+
+PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80 seconds prior to a May 31, 2019 firmware upgrade.) Data are processed by PurpleAir and a version of the data is displayed on the PurpleAir website.
+
+You can generate a current PAS object by using the `pas_createNew()` function. A PAS object is large data frame with a record for each PurupleAir sensor channel (2 channels per sensor). The `pas_createNew()` function performs the following tasks under the hood:
+
+1.  Download a raw dataset of the entire PurpleAir network that includes both metadata and recent PM2.5 averages for each deployed sensor across the globe. See `downloadParseSynopticData()` for more info.
+
+2.  Subset and enhance the raw dataset by replacing variables with more consistent, human readable names and adding spatial metadata for each sensor including the nearest official air quality monitor. For a more in depth explanation, see `enhanceSynopticData()`.
+
+To create a new PAS object you must first properly initialize the `MazamaSpatialUtils` package. This requires all the required R packages to be loaded into the R environment first (@sec-packages-load).
+
+```{r initialize}
+#| eval: false
+# Initialization
+initializeMazamaSpatialUtils()
+```
+
+The following example will create a brand new PAS object with up-to-the-minute data. Replace the text **INSERT API KEY** with your unique API key in quotes (@sec-createAPI) before running this code below.
+
+[*NOTE*]{.underline}*: You must have the appropriate number of points allocated to the API key in order for the PAS object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.*
+
+```{r pas_live}
+#| eval: false
+# Create new PAS object
+pas_live <- pas_createNew(api_key="INSERT API KEY", # replace with your API key
+                          countryCodes="US",        # country codes
+                          stateCodes="OH",          # state codes
+                          counties="Hamilton",      # counties
+                          lookbackDays=7,           # number of days to look back
+                          location_type=NULL)       # 0 - outside; 1 - inside, NULL - both
+```
+
+[*NOTE*]{.underline}*: Creating a PAS object can take up to a minute to process.*
+
+<!--# This section will be expanded upon later once we are familiar with using API Keys. -->
+
+### Archive Source {#sec-archive}
+
+It is also possible to load pre-generated PAS objects from a data archive specified by a URL in the `setArchiveBaseUrl()` function. Specify the name of the URL in quotes, as in the example below.
+
+```{r setArchiveBaseUrl}
+# Set location of pre-generated data files
+setArchiveBaseUrl("https://airfire-data-exports.s3-us-west-2.amazonaws.com/PurpleAir/v1")
+```
+
+Archived PAS objects can be loaded very quickly with the `pas_load()` function, which obtains PAS objects from the archive specified with `setArchvieBaseUrl()`. When used without specifying the `datestamp` argument, `pas_load()` will obtain the most recently processed PAS object. But you can also use the `datestamp` argument inside `pas_load()` to load an archived PAS object from a specified date.
+
+The following example loads a pre-generated PAS object from April 10, 2020 from the above archive base URL:
+
+```{r pas_archive}
+# Load a 'pas' object from a specific date
+pas_apr10.2020 <- pas_load(datestamp="20200410")   # '20200410' = '4-10-2020'
+```
+
+## Exploring Spatial Data {#sec-PAS-explore}
+
+[*NOTE*]{.underline}*: All the following R code chunks can be adapted to your own PAS object you create live (@sec-live) or archived (@sec-archive). For this demonstration, we will be using the example PAS from the AirSensor package to avoid long waiting times. The example PAS was generated on March 15, 2023 for outside sensors in California.*
+
+```{r pas_example}
+# Example PAS from AirSensor package
+pas <- AirSensor::example_pas
+```
+
+*For more information about the example PAS, run the code below. This opens up a help documentation describing how this PAS is generated:*
+
+```{r pas_help}
+#| eval: false
+# Open help documentation for example PAS
+help(example_pas)
+```
+
+Take a look at the first 10 rows of the PAS data frame:
+
+```{r pas_print}
+# Examine the first 10 rows
+print(pas, n=10, max_footer_lines=0)
+```
+
+There are `r nrow(pas)` columns and `r ncol(pas)` columns of the data frame. Not every column and row is displayed here. Each row of the PAS object corresponds to a unique PurpleAir sensor, identified by the `deviceDeploymentID` column, at this one moment in time. Each sensor records several columns of data, which we can take a look at below:
+
+```{r pas_col}
+# Get list of column names
+names(pas)
+```
+
+At a glance, the PAS has several useful columns of data we can explore. There are column recordings of temperature, relative humidity, pressure, and air quality.
+
+We are interested in PM~2.5~ (particulate matter smaller than 2.5 micrometers in diameter). There are 6 columns related to PM~2.5~ measurements. These are average PM~2.5~ measurements taken by the sensor for a certain period of time. Notice how each column starts with the prefix `pm2.5`. We can pull only those columns that begin with this prefix and store them as a new R object. Each row corresponds to one sensor so it is also a good idea to include the `locationID` of each sensor with our new `pm25` object.
+
+[*NOTE*]{.underline}*: The variable names of your PAS object may differ slightly from the examples provided here. Make sure you adapt the variable names such as `locationID` and `pm2.5_` exactly (case-sensitive, spelling, punctuation) so they match as specified in your PAS object.*
+
+```{r pm25}
+# Take a look at only PM2.5 data
+pm25 <- pas %>%
+  select(locationID, starts_with("pm2.5_"))
+print(pm25, n=10)
+```
+
+Each row of this new `pm25_data` object corresponds to one PurpleAir sensor at a given location. Now that we have our PM~2.5~ data setup, we can now create maps to explore PM~2.5~ observations by location.
+
+Display a map of the 1-hour average PM~2.5~ measurement for each sensor:
+
+<!--# The leaflets are not rendering correctly in Quarto, due to a recent 'knitr' update. Will need to fix this problem soon. -->
+
+```{r leaflet_pm25}
+#| eval: true
+# Plot interactive leaflet map of 1-hour average PM2.5
+pas %>%
+  pas_leaflet(parameter="pm2.5_60minute")
+```
+
+A map is shown of all the sensors with their 1 hour average PM~2.5~ measurements. The icons represent one scanner, colored based on their measurement. Clicking on one of the icons brings up the device's ID, sensor index, location, temperature, humidity, and average PM~2.5~ measurements over a 1-hour and 24-hour period.
+
+PAS data can consists of many sensors, resulting in many icons to select from in the map. We may wish to filter sensors based on their readings so that only those sensors who meet our filtering criteria appear on the map. This is useful, for example, if we are interested in identifying locations with high PM~2.5~ concentrations. The `pas_filter()` function can be used to filter sensors by state (with stateCode) and by a filtering criterion before it is passed to the `pas_leaflet()` function. In the example below, we identify PurpleAir sensors in California who register at least a 24-hour PM~2.5~ average of 12.0 micrograms per cubic meter - the equivalent of registering a Moderate [Air Quality Index (AQI)](https://www.epa.gov/sites/default/files/2016-04/documents/2012_aqi_factsheet.pdf):
+
+```{r leaflet_filter}
+#| eval: false
+# Apply filtering of sensors
+?pas_filter
+pas %>%
+  pas_filter(stateCode == "CA", pm2.5_24hour > 12.0) %>%
+  pas_leaflet(parameter = "pm2.5_24hour")
+```
+
+The PurpleAir sensors not only record PM~2.5~ data but they also record temperature and relative humidity as well. The following example displays the (high) temperature reading of all these sensors in California that are not missing:
+
+```{r leaflet_temperature}
+#| eval: false
+# Plot interactive map of temperature, removing missing data
+pas %>%
+  pas_filter(stateCode == "CA", !is.na(temperature)) %>%
+  pas_leaflet(parameter = "temperature")
+```
+
+It is left as an exercise to plot an interactive map of relative humidity observations for these same sensors.
+
+# Time Series Data {#sec-timeseries}
+
+**Time series** data provides a minute-by-minute database structure for transforming and analyzing [PurpleAir](https://www.purpleair.com/) sensor data. Unlike spatial data, which is geared for analyzing multiple sensors at one point in time, time series data focuses on a single PurpleAir sensor over time. In this manner, time series data allows the user to examine trends in air quality, temperature, and relative humidity recorded by one sensor.
+
+In this section, we will demonstrate an example analysis of an individual monitor located in Seattle, Washington over a two-month duration in which the Pacific Northwest experienced [hazardous air-quality conditions](https://www.usnews.com/news/healthiest-communities/articles/2018-08-19/air-quality-to-worsen-in-northwest-as-smoke-returns) caused by wildfires in British Columbia, Canada [@callahan_pat_2023].
+
+### Loading the Data {#sec-pat}
+
+PurpleAir sensor readings are uploaded to the cloud every 120 seconds where they are stored for download and display on the PurpleAir website. After every interval, the synoptic data is refreshed and the outdated synoptic data is then stored in a [ThingSpeak](https://thingspeak.com) database. In order to access the ThingSpeak channel API we must first load the synoptic database, which was discussed in @sec-createPAS.
+
+Once the PAS data frame has been loaded, we then create a **PurpleAir Time Series (PAT)** object by specifying the sensor and the dates from which to pull data from. Since this requires drawing data from the PurpleAir API dashboard, an API key (@sec-createAPI) is required to access this data to create the PAT object.
+
+The following example will create a brand new PAT object with up-to-the-minute data. Assuming a PAS object has been loaded (@sec-createPAS), we use it to create the PAT object with a specific `sensor_index`. Replace the text **INSERT API KEY** with your unique API key in quotes (@sec-createAPI) before running this code below.
+
+[*NOTE*]{.underline}*: You must have the appropriate number of points allocated to the API key in order for the PAT object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.*
+
+```{r pat}
+#| eval: false
+# Create new PAT object
+pat <- pat_createNew(api_key="INSERT API KEY", # replace with your API key
+    pas=pas,                                   # Your PAS object name
+    sensor_index="3515",                       # PurpleAir sensor ID
+    startdate="2022-07-01",
+    enddate="2022-07-08",
+    timezone="UTC",
+    verbose=TRUE
+  )
+```
+
+[*NOTE*]{.underline}*: Creating a PAT object can take up to a minute to process.*
+
+<!--# This section will be expanded upon later once we are familiar with using API Keys. -->
+
+## Exploring Temporal Data {#sec-PAT-explore}
+
+[*NOTE*]{.underline}*: All the following R code chunks can be adapted to your own PAT object you create (@sec-pat). For this demonstration, we will be using the example PAT from the AirSensor package to avoid long waiting times. The example PAT was generated for a specific sensor in Seattle, Washington between July 1, 2022 and July 8, 2022.*
+
+```{r pat_example}
+# Example PAT from AirSensor package
+pat <- AirSensor::example_pat
+```
+
+*For more information about the example PAT, run the code below. This opens up a help documentation describing how this PAT is generated:*
+
+```{r pat_help}
+#| eval: false
+# Open help documentation for example PAT
+help(example_pat)
+```
+
+Let's explore the PAT object:
+
+```{r pat_names}
+# Explore the PAT object
+pat %>%
+  names()
+```
+
+The PAT object contains two dataframes:
+
+-   `meta` - Includes one row of data that does not change over time (e.g., device location, latitude, longitude, state, county, etc.)
+
+    ```{r pat_meta}
+    # Variables that do not change with time
+    names(pat$meta)
+    ```
+
+-   `data` - Includes time series data that changes with time. Each row corresponds to a snapshot of data taken from sensor_index 3515 at a certain time (in UTC) and date.
+
+    ```{r pat_data}
+    # Examine time series data
+    print(pat$data, n=10)
+    ```
+
+As you can see, the PurpleAir sensor takes frequent measurements of temperature, humidity, and air quality. As the PAT object shows, these measurements change over time. We can take a look at trends for all these measurements by plotting the time series for each variable:
+
+```{r pat_multiplot}
+# Plot raw sensor data
+pat %>%
+  pat_multiplot(plottype="all")
+```
+
+The `plottype` option allows the user to select which variable they are interested in seeing a time series of. For PM~2.5~, the measurements are taken by two different channels, labeled **channel A** and **channel B**. These channels record PM~2.5~ data. Notice a huge spike in PM~2.5~ in both channel B and especially channel A on the night of July 4. Why do you think PM~2.5~ levels spiked here?
+
+PAT objects can span a wide range of dates. Suppose we are only interested in time series observations during the 4th of July weekend (July 2-4, 2022). We can create another PAT object from the original one by filtering out dates covering just these three dates:
+
+```{r pat_filterDate}
+# Filter dates from the PAT object
+pat_fourth <- pat %>%
+  pat_filterDate(startdate=20220702, enddate=20220705)
+```
+
+Our new PAT object, `pat_forth`, only covers dates between July 2, 2022 and July 4, 2022 (notice the `enddate` is July 5 since we want to include all the time points through July 4). Now let's take a look at only PM~2.5~ values more closely during this particular weekend:
+
+```{r pat_pm25}
+# Plot only PM2.5 data covering only the 4th of July weekend 2022
+pat_fourth %>%
+  pat_multiPlot(plottype = "pm25_over")
+```
+
+We can see noticeable peaks on the evening of Saturday, July 2, Sunday, July 3 and especially Monday, July 4. Channel A (red) only picks up the PM~2.5~ on the evening of July 4 whereas Channel B (blue) detects increased levels of PM~2.5~ every night throughout the 4th of July holiday.
+
+How do the values of the PurpleAir sensor compare with those from a [federal monitor](https://tools.airfire.org/monitoring/v4#!/?category=PM2.5_nowcast&centerlat=42&centerlon=-95&zoom=4)? The `pat_externalFit()` function produces a linear model between data from the PurpleAir sensor and data from the closest federal monitor [@monitori].
+
+```{r pat_externalFit}
+#| warning: false
+#| message: false
+# Compare sensor data with hourly data from federal monitor
+pat_fourth %>%
+  pat_externalFit()
+```
+
+If the PurpleAir monitor readings agrees with that of the federal monitor, then we should expect to see a high correlation, or equivalently, a high R^2^ value associated with their readings. By comparing the observations made by the PurpleAir monitor to the federal monitor, we see very little difference in PM~2.5~ readings between the two. This gives us confidence that the PurpleAir monitor is recording its PM~2.5~ observations accurately.
+
+The `AirSensor` package also has functions to evaluate the accuracy of the measurements made by the sensor. The `pat_outliers()` function will scan the PM~2.5~ observations and identify any measurements that are considered outliers:
+
+```{r pat_outliers}
+# Identify any outliers and replace them with window median values
+pat_fourth_filter <- pat_fourth %>%
+  pat_outliers(replace = TRUE, showPlot = TRUE)
+```
+
+The outliers, highlighted in red, are replaced instead with window median values. We can also check the accuracy of the PM~2.5~ measurements by comparing how the two channels record PM~2.5~ via the correlation of measurements taken between channel A and channel B using `pat_internalFit()`
+
+```{r pat_internalFit}
+# Compare Channel A and Channel B of the sensors
+pat_fourth_filter %>%
+  pat_internalFit()
+```
+
+A simple linear regression model fits the data from channel B to data from channel A. Ideally, we would like to see a strong negative correlation between temperature and humidity and a strong positive association between channel A and channel B.
+
+```{r pat_scatterPlotMatrix}
+#| message: false
+#| warning: false
+# Correlations to check that sensors are properly functioning
+pat_fourth_filter %>%
+  pat_scatterPlotMatrix()
+```
+
+While the correlation between temperature and humidity appears fine, the correlation between channel A and channel B is not as strong as we would like. This supports our observation of several inconsistent measurements especially on the evenings of July 2-4 between the two channels.
+
+# Acknowledgements {#sec-thanks}
+
+Special thanks to Dr. Cole Brokamp and Dr. Patrick Ryan for allowing me to speak at this workshop.
+
+# References
+
+::: {#refs}
+:::
