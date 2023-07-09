@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 8, 2023"
+date: "July 9, 2023"
 format:
   html:
     output-file: "index.html"
@@ -22,53 +22,69 @@ Air quality sensors have the potential to provide high spatial and temporal reso
 
 In this document, we will present methods of accessing synoptic and time series data using R software with the `AirSensor` package from the PurpleAir interface [@AirSensor]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
 
-## Installing R and RStudio {#sec-installR}
+## Basic Introduction to R and RStudio
 
-[*NOTE*]{.underline}*: If you already have R and RStudio installed on your computer, you may skip this section.*
+[*NOTE*]{.underline}*: If you already are familiar with both R and RStudio, you may skip this section.*
 
-R is a free, open-source software program that is available for Windows, Macs and Linux operating systems [@rcoreteam2013]. The latest version of R available as of the time of this writing is R-4.3.1. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system. Download the `base` distribution of R from the website and follow the prompts to install R on your computer.
+R is a free, open-source software program that is available for Windows, Macs and Linux operating systems [@rcoreteam2013]. Because of this, many statisticians, biostatisticans, and data scientists have been using R to meet their data processing needs. In this tutorial, we will introduce how to install R and RStudio on your computer, try out basic R function commands, and learn how to install and load R packages. This foundation is necessary before we begin to read and explore PurpleAir sensor data.
+
+### Installing R and RStudio {#sec-installR}
+
+The latest version of R available as of the time of this writing is R-4.3.1. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system. Download the `base` distribution of R from the website and follow the prompts to install R on your computer.
 
 After installing R on your computer, you will also need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an integrated development environment (IDE) to help data scientists be more productive with R [@rstudioteam2020a]. RStudio is a dashboard hosted by [posit](https://posit.co/) that allows ease of access to using R, especially if you are using R for the first time. The posit website link should automatically direct you to the appropriate version of RStudio you will need to download and install on your computer. Once you have both R and RStudio installed, open up the RStudio software.
 
-## Opening and Using this Document {#sec-quarto}
+### Opening and Using R
 
-<!--# Insert the URL for our GitHub page here. -->
+Download the `purpleair.R` file from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R). Make note of the file location on your computer where you save the file. It is recommended that you save the R file in a different location than your **Downloads** folder.
 
-Download the `purpleair.QMD` and the `purpleair.bib` file from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R). Save both files in the same file location on your computer. Click on the `purpleair.QMD` file to open it.
+This kind of file is called an R script. You can identify R files with the file extension name `.R`. By default, RStudio should open a `.R` file if you click on it. If your computer does not recognize the `.R` file extension, you must tell your computer to open the file using RStudio. Optionally, you can also open an `.R` file within RStudio by following these steps:
 
-This file is called a Quarto file, identified with the file extension `.QMD`. This kind of document will allow the user to display R code and output while also explaining what the R code does. R code is displayed in R code chunks like the following example below. To execute the entirety of an R code chunk, click on the green arrow button at the top right of the R code chunk.
+1.  Open RStudio.
+2.  Click on **File** \> **Open File**. A navigation window should appear.
+3.  Navigate to the file location where you saved the `purpleair.R` file.
+4.  Click **Open**.
+
+A typical layout within RStudio has four different quadrants. Starting from the top-left clockwise:
+
+1.  **Source Pane:** This panel displays all the R scripts you have opened. Code should be written in this panel. You can save R code within the panel to work on later. Any .R files you open with RStudio will be displayed in this panel.
+2.  **Console Pane:** This panel displays the actual R console, including all the code and output that has been conducted so far.
+3.  **Environment Pane:** This panel houses several tabs. The **Environment** tab lists all the R objects and variables available during the R session. The **History** tab keeps track of all code that has been executed in the Console. More tabs may be displayed depending on the type of project you may be working on.
+4.  **Output Pane:** This panel includes a file viewer, plots that have been made, list of packages available and currently loaded, help documentation, a viewer, and a presentation tab.
+
+R code is executed one line at a time. To run a line, place your cursor on the line you wish to run in the Source Pane and click on **Run**. The line of code is then sent to the Console Pane and is executed. You can highlight multiple lines of code and run them all at once as well. Optionally, you can run lines of code by using the shortcut **CTRL + ENTER**. To get started, here is some simple lines of code:
 
 ```{r example1}
-#| eval: false
-# Click the green arrow button on the right to run this code
+# Assign values
 x <- 2    # assign the letter 'x' the value 2
 y <- 9    # assign the letter 'y' the value 9
+```
+
+[*NOTE:*]{.underline} *If the first line of code begins with the special character symbol `#`, then that line is called a comment. Comments are useful to write down what certain lines of code perform. R will not execute lines of code that begin with `#`. Likewise, R will not execute any code following the `#` symbol. As a result, the `#` symbol can also be used to grey out lines of code that maybe do not work or you wish to not execute without having to delete the entire line of code. In RStudio, comments are easily identified because the lines of code are written in green.*
+
+Highlight the first line of code in the Source Pane `x <- 2`. The special character `<-` assigns the value provided on the right (`2`) to an object on the left (`x`). Hence, this line will set the variable `x` with the value of 2. The next line of code will assign the value `9` to the variable `y`. You can see that these values have been declared by clicking on the **Environment** tab in the Environment Pane.
+
+With the variables `x` and `y` now declared, we can then use them to perform some simple operations:
+
+```{r}
+# Perform simple operations
 x + y     # equivalent to '2' + '9'
 sqrt(y)   # sqrt = square-root
 ```
 
-The grey arrow with a green bar icon runs all R code chucks above the current chunk. This is useful for executing R code that is usually needed to run the current R code chunk - operations such as loading R packages, importing data into the R environment, and loading R objects. As an example, if you had run the following code chuck below without running the one above, an error will result because the R objects x and y have not been assigned at this point.
+Since `x` and `y` have been declared, R then calculates `x + y` and `sqrt(y)`. These results change depending on what the values of `x` and `y` are. As an exercise, change the values of `x` and `y` and rerun these lines again.
 
-```{r example2}
-#| eval: false
-# This code block requires the previous block to be run first
-x*y     # multiplication
-x/y     # division
-y^x     # exponentiation
-log(y)  # natural log (ln(x))
-```
+[*NOTE:*]{.underline} *Make sure you declare both `x` and `y` variables first before running `x + y` and `sqrt(y)` or else R will report an **ERROR** message.*
 
-Optionally, you can render the entire document and have it displayed nicely on your default HTML viewer. Click on the **Render** button to compile the document. RStudio then begins the process of rendering the document. Once this is complete, an HTML viewer will automatically open and show you the rendered document. Here you can see all the code and output that would be generated if you ran every R code chunk.
+A rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available on this site is in the `purpleair.R` file. As you follow along on the site, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it.
 
-[*NOTE*]{.underline}*: You must have both* `purpleair.QMD` *and* `purpleair.bib` *files saved in the same folder location on your computer to render the document.*
+<!--# Advanced users of R who are familiar with Quarto, a type of document that merges R code and output into a rendered document such as HTML or PDF output can check out the 'purpleair.QMD' and their associated files to study how this site is rendered. -->
 
-If you run into problems running and compiling this document, a rendered HTML of the output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). In addition to the Quarto document, we have pulled all the R code from purpleair.QMD and saved them in a regular R script file (identified with the file extension `.R`). This is handy if you are interested in playing around with the R code provided here or for learning more about how the functions work.
-
-## Packages
+### Packages {#sec-packages}
 
 R packages are extensions to the base R environment, allowing the user to import data, functions, code, documentation and objects other creators have compiled. These packages are hosted on a centralized software repository such as the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/).
 
-### Installing R Packages {#sec-packages-install}
+#### Installing R Packages {#sec-packages-install}
 
 Installing packages is easy and usually requires a one-time installation process. You will need to install the following packages in an R session in order to use the following code in this vignette:
 
@@ -95,9 +111,15 @@ install.packages('dplyr', 'ggplot2')
 devtools::install_github("MazamaScience/AirSensor")
 ```
 
-### Loading R Packages {#sec-packages-load}
+Some R package depend on other R packages (called **dependencies**). For example, compiling this Quarto document requires the knitr package for the rending to work. Packages that depend on other packages will install these extra packages automatically if they are not already installed in the users library. You can view all the R packages installed on your computer by clicking on the **Packages** tab in RStudio on the File Manager panel (bottom-right quadrant by default).
 
-Once R packages have been installed, you must then load the R package in the R environment. To do this, use the function `library()` along with the package name.
+[*NOTE:*]{.underline} *R already comes with its own packages (e.g., datasets, graphics, etc.). You do not need to install these packages, as they are already preinstalled when R is first installed.*
+
+Periodically, authors of R packages will update their package to fix bugs, add more functions and data sets, and to be better compatibble with the latest R software and other packages. You can use the `install.packages()` function to update (read re-install) the package to the latest version. By default, the latest version of the package available on CRAN will be installed.
+
+#### Loading R Packages {#sec-packages-load}
+
+Once R packages have been installed, you must then load the R package in the R environment. Loading in R packages allows the user to gain access to data, functions, and help documentation that comes along with the R package. To load an R package, use the function `library()` along with the package name.
 
 ```{r load_packages}
 #| message: false
@@ -110,7 +132,30 @@ library(MazamaSpatialUtils)
 library(AirSensor)
 ```
 
+You can check whether a package is successfully loaded by clicking on the **Packages** tab in the File Manager quadrant. Loaded packages are indicated with a check mark. You can also load a package by selecting the open box next to the package name. Loaded packages can be unloaded by clicking on the check mark. Typically, however, packages are never unloaded, as functions that are part of a package will then become unavailable once the package is unloaded. All open packages are unloaded when R or RStudio is closed or a new R session begins.
+
 [*NOTE*]{.underline}*: Unlike the installation process where the packages are installed only once, you must load these packages every time you start a new R session. When you quit your R session and start a fresh session, you must reload the R packages again.*
+
+Sometimes, R will print a warning message if a package that is loaded could conflict with another package that is already loaded. This scenario appears if, for example, functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default. To use a masked function from an earlier package, you must either unload the latter package or reference specifically the package, as in the example below:
+
+```{r package_ref}
+# Pull example sensor data from the 'AirSensor' package
+sen <- AirSensor::example_sensor
+
+# Select only the data from the example sensor data
+sen.data <- sen$data # $ - references 'data' column
+```
+
+[*NOTE:*]{.underline} *The `AirSensor` package does NOT have to be loaded for this code to work. Indeed, the `AirSensor::example_sensor` pulls the example_sensor data from the `AirSensor` package without loading the entire package. This is useful if you want to avoid loading in multiple packages that you many only use sparingly.*
+
+The above R code chunk pulls the example_sensor data from the `AirSensor` without loading the package. The `$` operator is a special character in R. It references the column name within a data frame. In the example above, we want only the `data` column of the `example_sensor` data. We save only the sensor data in a data frame called sen.data. We can then display several first rows of this new R object with the `head()` function. By default, the first 6 rows are displayed. We can change this by declaring an **option** - additional arguments you can provide in an R function to modify its behavior. For example, the option `n=10` in the `head()` function changes the number of rows to display to 10:
+
+```{r example_print}
+# Display first n=10 rows of the example sensor data 
+head(sen.data, n=10)
+```
+
+All options must be specified within a function. Each option is then followed by an `=` operator with the argument specified afterwards to pass onto the function. You will see more examples of using options later on.
 
 # Synoptic Data {#sec-synoptic}
 
@@ -154,6 +199,62 @@ You should then see your unique API key for the project. You can modify the allo
 
 [*NOTE*]{.underline}*: API keys are issued per user, not per sensor. Make sure that you have allocated points to the project associated with the API key before continuing on.*
 
+#### Fetch and Set API Key {#sec-setAPI}
+
+The API Key is an access token that allows you to pull PurpleAir sensor data from the cloud into your R session environment (see @sec-createAPI to learn how to create API Keys). It is not ideal to leave your API Key in a R script. If you share any of these documents that include your personal API Key with someone else, when they request PurpleAir sensor data, they will be using your points! A better solution is to save your API Key in a separate file that you keep and then provide code in the R script you are working worth that then looks for the file with your API Key and reads in the key.
+
+In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7h8i9j0` and the variable name to reference it is called `PurpleAir_API`.
+
+1.  Create a new R script by clicking on **File** \> **New File** \> **R Script**.
+
+2.  On the first line of this new blank R script, assign your PurpleAir API Key in quotes to a variable name you will then reference later. The `=` sign works just like the `<-` operator.
+
+    ```{r global_vars}
+    #| eval: false
+    # Below is the first line of the 'global_vars.R' file
+    PurpleAir_API = "a1b2c3d4e5f6g7h8i9j0"
+    ```
+
+    [*NOTE:*]{.underline} *Your PurpleAir API Key must be in single-quotes or double-quotes for this to work. API Keys are recognized in R as character strings. In RStudio, character strings are written in a forest green color to easily identify this.*
+
+3.  Save this R file in the same folder as the R file you will use the API Key. In this example, we save the R file as `global_vars.R`. Once you have saved the R file that contains your API Key, you may then close the file.
+
+4.  In the R script that you want to read in the API Key, use the `source()` function and then reference the R file (in this case, `global_vars.R`) that you saved in the previous step.
+
+    ```{r set_API}
+    #| eval: false
+    # Read 'global_vars.R' file containing the API Key
+    source(global_vars.R)
+    ```
+
+    [*NOTE:*]{.underline} *If you save your `global_vars.R` file in a different file location on your computer than the R script that you are using to pull the API Key from, you must specify the full file path in quotes in the `source()` function.*
+
+5.  If done correctly, your current R session should fetch for the appropriate R file, read it, and then save your API Key as the variable name (in this case, `PurpleAir_API`) you specified in step 2. This is a great way to read in your API Key you have saved without having to specify it, protecting your access to the PurpleAir dashboard.
+
+6.  Once you have read in the variable containing the API Key (in this case, `PurpleAir_API`), you must then define how you will use the API Key with the `setAPIKey()` function. To read in PurpleAir data, we must declare that our API Key will be used to read (not write) PurpleAir data:
+
+    ```{r PurpleAir_red}
+    #| eval: false
+    # Set the API Key
+    setAPIKey(provider = "PurpleAir-read", key = PurpleAir_API)
+    ```
+
+    ```{r}
+    #| echo: false
+    setAPIKey(provider = "PurpleAir-read", key = "a1b2c3d4e5f6g7h8i9j0")
+    ```
+
+7.  The first option `provider` specifies how we will use the API Key. The second option `key` identifies the API Key variable from the `global_vars.R` file.
+
+8.  Verify that the API Key has been set correctly by running either the `getAPIKey()` function or the `showAPIKeys()` function:
+
+    ```{r showAPIKeys}
+    # Return all API Keys currently set
+    showAPIKeys()
+    ```
+
+    This is a list of all the API Keys currently set in this R session. You can declare multiple API Keys if you have more than one project.
+
 #### Create a New PAS Data Using API Key {#sec-createPAS}
 
 PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80 seconds prior to a May 31, 2019 firmware upgrade.) Data are processed by PurpleAir and a version of the data is displayed on the PurpleAir website.
@@ -172,19 +273,18 @@ To create a new PAS object you must first properly initialize the `MazamaSpatial
 initializeMazamaSpatialUtils()
 ```
 
-The following example will create a brand new PAS object with up-to-the-minute data. Replace the text **INSERT API KEY** with your unique API key in quotes (@sec-createAPI) before running this code below.
+The following example will create a brand new PAS object with up-to-the-minute data. Make sure you have set your unique API key (@sec-setAPI) before running this code below.
 
 [*NOTE*]{.underline}*: You must have the appropriate number of points allocated to the API key in order for the PAS object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.*
 
 ```{r pas_live}
 #| eval: false
 # Create new PAS object
-pas_live <- pas_createNew(api_key="INSERT API KEY", # replace with your API key
-                          countryCodes="US",        # country codes
-                          stateCodes="OH",          # state codes
-                          counties="Hamilton",      # counties
-                          lookbackDays=7,           # number of days to look back
-                          location_type=NULL)       # 0 - outside; 1 - inside, NULL - both
+pas_live <- pas_createNew(countryCodes="US",   # Country codes
+                          stateCodes="OH",     # State codes
+                          counties="Hamilton", # Counties
+                          lookbackDays=7,      # Number of days to look back
+                          location_type=NULL)  # 0 - outside; 1 - inside, NULL - both
 ```
 
 [*NOTE*]{.underline}*: Creating a PAS object can take up to a minute to process.*
@@ -211,7 +311,7 @@ pas_apr10.2020 <- pas_load(datestamp="20200410")   # '20200410' = '4-10-2020'
 
 ## Exploring Spatial Data {#sec-PAS-explore}
 
-[*NOTE*]{.underline}*: All the following R code chunks can be adapted to your own PAS object you create live (@sec-live) or archived (@sec-archive). For this demonstration, we will be using the example PAS from the AirSensor package to avoid long waiting times. The example PAS was generated on March 15, 2023 for outside sensors in California.*
+[*NOTE*]{.underline}*: All the following R code chunks can be adapted to your own PAS object you create live (@sec-live) or archived (@sec-archive). For this demonstration, we will be using the example PAS from the `AirSensor` package to avoid long waiting times. This example PAS was generated on March 15, 2023 for outside sensors in California:*
 
 ```{r pas_example}
 # Example PAS from AirSensor package
@@ -240,9 +340,9 @@ There are `r nrow(pas)` columns and `r ncol(pas)` columns of the data frame. Not
 names(pas)
 ```
 
-At a glance, the PAS has several useful columns of data we can explore. There are column recordings of temperature, relative humidity, pressure, and air quality.
+At a glance, the PAS has several useful columns of data we can explore. There are column recordings of temperature, relative humidity, pressure, and air quality. We are interested in PM~2.5~ (particulate matter smaller than 2.5 micrometers in diameter). There are 6 columns related to PM~2.5~ measurements. These are average PM~2.5~ measurements taken by the sensor for a certain period of time. Notice how each column starts with the prefix `pm2.5`.
 
-We are interested in PM~2.5~ (particulate matter smaller than 2.5 micrometers in diameter). There are 6 columns related to PM~2.5~ measurements. These are average PM~2.5~ measurements taken by the sensor for a certain period of time. Notice how each column starts with the prefix `pm2.5`. We can pull only those columns that begin with this prefix and store them as a new R object. Each row corresponds to one sensor so it is also a good idea to include the `locationID` of each sensor with our new `pm25` object.
+We can pull only those columns that begin with this prefix and store them as a new R object. Each row corresponds to one sensor so it is also a good idea to include the `locationID` of each sensor with our new `pm25` object. The code below takes the pas R object and then uses the `select()` function to choose `locationID` that starts with `pm2.5_` as the variable name (notice the use of quotes here!). The `%>%` operator is called a pipeline operator that is available in the `dplyr` package (and others) which can accomplish this process in one execution.
 
 [*NOTE*]{.underline}*: The variable names of your PAS object may differ slightly from the examples provided here. Make sure you adapt the variable names such as `locationID` and `pm2.5_` exactly (case-sensitive, spelling, punctuation) so they match as specified in your PAS object.*
 
@@ -274,7 +374,7 @@ Display a map of the 1-hour average PM~2.5~ measurement for each sensor:
 #| eval: true
 # Plot interactive leaflet map of 1-hour average PM2.5
 pas %>%
-  pas_leaflet(parameter="pm2.5_60minute")
+  pas_leaflet(parameter = "pm2.5_60minute")
 ```
 
 A map is shown of all the sensors with their 1 hour average PM~2.5~ measurements. The icons represent one scanner, colored based on their measurement. Clicking on one of the icons brings up the device's ID, sensor index, location, temperature, humidity, and average PM~2.5~ measurements over a 1-hour and 24-hour period.
@@ -307,24 +407,23 @@ It is left as an exercise to plot an interactive map of relative humidity observ
 
 In this section, we will demonstrate an example analysis of an individual monitor located in Seattle, Washington over a two-month duration in which the Pacific Northwest experienced [hazardous air-quality conditions](https://www.usnews.com/news/healthiest-communities/articles/2018-08-19/air-quality-to-worsen-in-northwest-as-smoke-returns) caused by wildfires in British Columbia, Canada [@callahan_pat_2023].
 
-### Loading the Data {#sec-pat}
+## Loading PAT Data {#sec-pat}
 
 PurpleAir sensor readings are uploaded to the cloud every 120 seconds where they are stored for download and display on the PurpleAir website. After every interval, the synoptic data is refreshed and the outdated synoptic data is then stored in a [ThingSpeak](https://thingspeak.com) database. In order to access the ThingSpeak channel API we must first load the synoptic database, which was discussed in @sec-createPAS.
 
-Once the PAS data frame has been loaded, we then create a **PurpleAir Time Series (PAT)** object by specifying the sensor and the dates from which to pull data from. Since this requires drawing data from the PurpleAir API dashboard, an API key (@sec-createAPI) is required to access this data to create the PAT object.
+Once the PAS data frame has been loaded, we then create a **PurpleAir Time Series (PAT)** object by specifying the sensor and the dates from which to pull data from. Since this requires drawing data from the PurpleAir API dashboard, an API key (@sec-setAPI) is required to access this data to create the PAT object.
 
-The following example will create a brand new PAT object with up-to-the-minute data. Assuming a PAS object has been loaded (@sec-createPAS), we use it to create the PAT object with a specific `sensor_index`. Replace the text **INSERT API KEY** with your unique API key in quotes (@sec-createAPI) before running this code below.
+The following example will create a brand new PAT object with up-to-the-minute data. Assuming a PAS object has been loaded (@sec-createPAS), we use it to create the PAT object with a specific `sensor_index`. Make sure you have set your API Key (@sec-setAPI) before running this code below.
 
 [*NOTE*]{.underline}*: You must have the appropriate number of points allocated to the API key in order for the PAT object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.*
 
 ```{r pat}
 #| eval: false
 # Create new PAT object
-pat <- pat_createNew(api_key="INSERT API KEY", # replace with your API key
-    pas=pas,                                   # Your PAS object name
-    sensor_index="3515",                       # PurpleAir sensor ID
-    startdate="2022-07-01",
-    enddate="2022-07-08",
+pat <- pat_createNew(pas=pas,  # Your PAS object name
+    sensor_index="3515",       # PurpleAir sensor ID
+    startdate="2022-07-01",    # Start Date
+    enddate="2022-07-08",      # End Date
     timezone="UTC",
     verbose=TRUE
   )
