@@ -2,10 +2,11 @@
 title: "PurpleAir Data Exploration"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "June 30, 2023"
+date: "July 8, 2023"
 format:
   html:
     output-file: "index.html"
+    embed-resources: true
 toc: true
 toc-expand: true
 toc-title: Contents
@@ -33,9 +34,9 @@ After installing R on your computer, you will also need to install [RStudio Desk
 
 <!--# Insert the URL for our GitHub page here. -->
 
-Download the `purpleair.QMD` and the `purpleair.bib` file from our GitHub page by clicking here. Save both files in the same file location on your computer. Click on the `purpleair.QMD` file to open it.
+Download the `purpleair.QMD` and the `purpleair.bib` file from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R). Save both files in the same file location on your computer. Click on the `purpleair.QMD` file to open it.
 
-This kind of document allow us to display R code and output while also explaining what the R code does. R code is displayed in R code chunks like the following example below. To execute the entirety of an R code chunk, click on the green arrow button at the top right of the R code chunk.
+This file is called a Quarto file, identified with the file extension `.QMD`. This kind of document will allow the user to display R code and output while also explaining what the R code does. R code is displayed in R code chunks like the following example below. To execute the entirety of an R code chunk, click on the green arrow button at the top right of the R code chunk.
 
 ```{r example1}
 #| eval: false
@@ -60,6 +61,8 @@ log(y)  # natural log (ln(x))
 Optionally, you can render the entire document and have it displayed nicely on your default HTML viewer. Click on the **Render** button to compile the document. RStudio then begins the process of rendering the document. Once this is complete, an HTML viewer will automatically open and show you the rendered document. Here you can see all the code and output that would be generated if you ran every R code chunk.
 
 [*NOTE*]{.underline}*: You must have both* `purpleair.QMD` *and* `purpleair.bib` *files saved in the same folder location on your computer to render the document.*
+
+If you run into problems running and compiling this document, a rendered HTML of the output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). In addition to the Quarto document, we have pulled all the R code from purpleair.QMD and saved them in a regular R script file (identified with the file extension `.R`). This is handy if you are interested in playing around with the R code provided here or for learning more about how the functions work.
 
 ## Packages
 
@@ -252,12 +255,23 @@ print(pm25, n=10)
 
 Each row of this new `pm25_data` object corresponds to one PurpleAir sensor at a given location. Now that we have our PM~2.5~ data setup, we can now create maps to explore PM~2.5~ observations by location.
 
+<!--# As of a recent 'knitr' update version 1.43, the leaflets are not rendering correctly in the HMTL output Quarto renders. There is a 'eval' option to turn off the leaflets if they do not display correctly or a ERROR message results when rendering the HTML output. To get them to render correctly, you must downgrade 'knitr' to version 1.42, shown below: -->
+
+```{r}
+#| eval: false
+#| echo: false
+# Remove latest version of 'knitr' package (if upgraded past 1.42)
+remove.packages(knitr)
+
+# Install 'knitr' package version 1.42
+require(devtools)
+install_version("knitr", version = 1.42)
+```
+
 Display a map of the 1-hour average PM~2.5~ measurement for each sensor:
 
-<!--# The leaflets are not rendering correctly in Quarto, due to a recent 'knitr' update. Will need to fix this problem soon. -->
-
 ```{r leaflet_pm25}
-#| eval: false
+#| eval: true
 # Plot interactive leaflet map of 1-hour average PM2.5
 pas %>%
   pas_leaflet(parameter="pm2.5_60minute")
@@ -268,9 +282,8 @@ A map is shown of all the sensors with their 1 hour average PM~2.5~ measurements
 PAS data can consists of many sensors, resulting in many icons to select from in the map. We may wish to filter sensors based on their readings so that only those sensors who meet our filtering criteria appear on the map. This is useful, for example, if we are interested in identifying locations with high PM~2.5~ concentrations. The `pas_filter()` function can be used to filter sensors by state (with stateCode) and by a filtering criterion before it is passed to the `pas_leaflet()` function. In the example below, we identify PurpleAir sensors in California who register at least a 24-hour PM~2.5~ average of 12.0 micrograms per cubic meter - the equivalent of registering a Moderate [Air Quality Index (AQI)](https://www.epa.gov/sites/default/files/2016-04/documents/2012_aqi_factsheet.pdf):
 
 ```{r leaflet_filter}
-#| eval: false
+#| eval: true
 # Apply filtering of sensors
-?pas_filter
 pas %>%
   pas_filter(stateCode == "CA", pm2.5_24hour > 12.0) %>%
   pas_leaflet(parameter = "pm2.5_24hour")
@@ -279,7 +292,7 @@ pas %>%
 The PurpleAir sensors not only record PM~2.5~ data but they also record temperature and relative humidity as well. The following example displays the (high) temperature reading of all these sensors in California that are not missing:
 
 ```{r leaflet_temperature}
-#| eval: false
+#| eval: true
 # Plot interactive map of temperature, removing missing data
 pas %>%
   pas_filter(stateCode == "CA", !is.na(temperature)) %>%
