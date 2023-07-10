@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 9, 2023"
+date: "July 10, 2023"
 format:
   html:
     output-file: "index.html"
@@ -32,11 +32,17 @@ R is a free, open-source software program that is available for Windows, Macs an
 
 The latest version of R available as of the time of this writing is R-4.3.1. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system. Download the `base` distribution of R from the website and follow the prompts to install R on your computer.
 
+![The Comprehensive R Archive Network website for downloading R.](r_site.png)
+
 After installing R on your computer, you will also need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an integrated development environment (IDE) to help data scientists be more productive with R [@rstudioteam2020a]. RStudio is a dashboard hosted by [posit](https://posit.co/) that allows ease of access to using R, especially if you are using R for the first time. The posit website link should automatically direct you to the appropriate version of RStudio you will need to download and install on your computer. Once you have both R and RStudio installed, open up the RStudio software.
+
+![The posit site for downloading RStudio.](rstudio_site.png)
 
 ### Opening and Using R
 
 Download the `purpleair.R` file from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R). Make note of the file location on your computer where you save the file. It is recommended that you save the R file in a different location than your **Downloads** folder.
+
+![Our GitHub website where all files in the document are located.](github.png)
 
 This kind of file is called an R script. You can identify R files with the file extension name `.R`. By default, RStudio should open a `.R` file if you click on it. If your computer does not recognize the `.R` file extension, you must tell your computer to open the file using RStudio. Optionally, you can also open an `.R` file within RStudio by following these steps:
 
@@ -46,6 +52,8 @@ This kind of file is called an R script. You can identify R files with the file 
 4.  Click **Open**.
 
 A typical layout within RStudio has four different quadrants. Starting from the top-left clockwise:
+
+![The default RStudio layout for a typical R session.](rstudio_layout.png)
 
 1.  **Source Pane:** This panel displays all the R scripts you have opened. Code should be written in this panel. You can save R code within the panel to work on later. Any .R files you open with RStudio will be displayed in this panel.
 2.  **Console Pane:** This panel displays the actual R console, including all the code and output that has been conducted so far.
@@ -134,9 +142,15 @@ library(AirSensor)
 
 You can check whether a package is successfully loaded by clicking on the **Packages** tab in the File Manager quadrant. Loaded packages are indicated with a check mark. You can also load a package by selecting the open box next to the package name. Loaded packages can be unloaded by clicking on the check mark. Typically, however, packages are never unloaded, as functions that are part of a package will then become unavailable once the package is unloaded. All open packages are unloaded when R or RStudio is closed or a new R session begins.
 
+![List of Packages installed in the Output Pane. Loaded packages are indicated with a checkmark.](packages.png){width="450"}
+
 [*NOTE*]{.underline}*: Unlike the installation process where the packages are installed only once, you must load these packages every time you start a new R session. When you quit your R session and start a fresh session, you must reload the R packages again.*
 
-Sometimes, R will print a warning message if a package that is loaded could conflict with another package that is already loaded. This scenario appears if, for example, functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default. To use a masked function from an earlier package, you must either unload the latter package or reference specifically the package, as in the example below:
+Sometimes, R will print a warning message if a package that is loaded could conflict with another package that is already loaded. This scenario appears if, for example, functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default.
+
+![Function conflicts when loading the `dplyr` package.](conflict.png){width="450"}
+
+To use a masked function from an earlier package, you must either unload the latter package or reference specifically the package, as in the example below:
 
 ```{r package_ref}
 # Pull example sensor data from the 'AirSensor' package
@@ -173,29 +187,49 @@ The [**PurpleAir API dashboard**](https://community.purpleair.com/t/new-api-dash
 
 #### Create a Project {#sec-createProject}
 
+![The PurpleAir API dashboard for creating projects.](purpleair_projects.png)
+
 First create a project by following these steps:
 
 1.  Sign in to [develop.purpleair.com](https://develop.purpleair.com/home) using a Gmail or Google-associated account.
+
 2.  Click **Projects** on the left-hand side of the page.
+
 3.  Click on **Add** in the top right-hand corner of the page.
+
+    ![Creating a project in the PurpleAir API dashboard.](purpleair_addproject.png){width="550"}
+
 4.  Enter in a project name.
+
 5.  You must allocate points to your new project. New users begin with 1 million free points that they can allocate to any project. When an API query is executed in R, points will be deducted from this allocation based on the type of data being requested. Additional points may be purchased on the PurpleAir website. More information about how points are allocated and used can be found [here](https://community.purpleair.com/t/api-pricing/4523).
+
 6.  Click **Add**.
 
 Once a project has been created, you can then create an API key for that project.
 
 #### Create API Key {#sec-createAPI}
 
+![List of active API Keys on the PurpleAir dashboard.](purpleair_apikey.png)
+
 To obtain your unique API key follow these steps:
 
 1.  Sign in to [develop.purpleair.com](https://develop.purpleair.com/home) using a Gmail or Google-associated account.
+
 2.  Click **API Keys** on the left-hand side of the page.
+
 3.  Click on **Add** in the top right-hand corner of the page.
+
+    ![](purpleair_createkey.png){width="450"}
+
 4.  You should see the auto-populated project name you created earlier (@sec-createProject). You can have several projects and API keys. Select the appropriate project if you have multiple projects.
+
 5.  Select **Read** under "Type", select **Enabled** under "Status" , and leave all the other fields blank.
+
 6.  Click **Add**.
 
 You should then see your unique API key for the project. You can modify the allocation of points and examine the usage of the API key and its allocated points at any time.
+
+![The unique PurpleAir API Key associated with your project.](purpleair_api.png){width="800"}
 
 [*NOTE*]{.underline}*: API keys are issued per user, not per sensor. Make sure that you have allocated points to the project associated with the API key before continuing on.*
 
