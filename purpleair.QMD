@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 10, 2023"
+date: "July 11, 2023"
 format:
   html:
     output-file: "index.html"
@@ -86,6 +86,8 @@ Since `x` and `y` have been declared, R then calculates `x + y` and `sqrt(y)`. T
 
 A rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available on this site is in the `purpleair.R` file. As you follow along on the site, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it.
 
+[*NOTE:*]{.underline} *Make sure you always include the `.R` file extension at the end of the filename when naming and saving R scripts. RStudio will **not** add this file extension on for you automatically. If you do not include the `.R` suffix, your computer may not recognize how to open the file.*
+
 <!--# Advanced users of R who are familiar with Quarto, a type of document that merges R code and output into a rendered document such as HTML or PDF output can check out the 'purpleair.QMD' and their associated files to study how this site is rendered. -->
 
 ### Packages {#sec-packages}
@@ -113,7 +115,7 @@ To install these R packages, simply run the following code below.
 ```{r install_packages}
 #| eval: false
 # This only needs to be run once to install
-install.packages('dplyr', 'ggplot2')
+install.packages('dplyr', 'ggplot2', 'MazamaCoreUtils', 'MazamaSpatialUtils')
 
 # Install the 'AirSensor' package
 devtools::install_github("MazamaScience/AirSensor")
@@ -171,7 +173,7 @@ head(sen.data, n=10)
 
 All options must be specified within a function. Each option is then followed by an `=` operator with the argument specified afterwards to pass onto the function. You will see more examples of using options later on.
 
-# Synoptic Data {#sec-synoptic}
+# PurpleAir Synoptic (PAS) Data {#sec-synoptic}
 
 **Synoptic data** provides a synopsis - a comprehensive view of something at a moment in time. Synoptic data takes a snapshot of data from all the PurpleAir sensors at a moment in time and uploads them to the cloud. **Spatial data** utilizes synoptic data to visualize data in different spacial locations (such as across the United States) at a given moment. Spatial data from PurpleAir sensors are stored on the cloud as **PurpleAir Synoptic (PAS)** data.
 
@@ -181,7 +183,7 @@ This vignette demonstrates an example workflow for exploring air quality synopti
 
 There are two various was to obtaining PurpleAir Synoptic (PAS) data to use with this vignette. You can create a PAS object using the latest available PurpleAir sensor data from the PurpleAir website within your R environment. This method requires the user to create an account with PurpleAir and obtain an **Application Programming Interface (API)** key unique to the user to make specific queries. You can also pull an archived PAS object of historic PurpleAir data which accomplishes the same task.
 
-### Live Source {#sec-live}
+### Creating a New PAS from PurpleAir Dashboard {#sec-live}
 
 The [**PurpleAir API dashboard**](https://community.purpleair.com/t/new-api-dashboard/3981) allows users to create and manage their API keys and their usage. The site is available at [develop.purpleair.com](https://develop.purpleair.com/home). The dashboard requires a Gmail or Google-associated account to sign in.
 
@@ -249,9 +251,11 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
     PurpleAir_API = "a1b2c3d4e5f6g7h8i9j0"
     ```
 
-    [*NOTE:*]{.underline} *Your PurpleAir API Key must be in single-quotes or double-quotes for this to work. API Keys are recognized in R as character strings. In RStudio, character strings are written in a forest green color to easily identify this.*
+    [*NOTE:*]{.underline} *Your PurpleAir API Key must be in single-quotes or double-quotes for this to work. API Keys are recognized in R as character strings. In RStudio, character strings are written in a forest green color to easily identify character strings.*
 
 3.  Save this R file in the same folder as the R file you will use the API Key. In this example, we save the R file as `global_vars.R`. Once you have saved the R file that contains your API Key, you may then close the file.
+
+    [*NOTE:*]{.underline} *Make sure you supply the `.R` file extension at the end of the filename when naming and saving the file. RStudio will **not** add this file extension on for you when you go to save the file. If you do not include the `.R` suffix, your computer may not recognize how to open the file.*
 
 4.  In the R script that you want to read in the API Key, use the `source()` function and then reference the R file (in this case, `global_vars.R`) that you saved in the previous step.
 
@@ -261,9 +265,9 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
     source(global_vars.R)
     ```
 
-    [*NOTE:*]{.underline} *If you save your `global_vars.R` file in a different file location on your computer than the R script that you are using to pull the API Key from, you must specify the full file path in quotes in the `source()` function.*
+    [*NOTE:*]{.underline} *If you save your `global_vars.R` file in a different file location on your computer than the R script that you are using to pull the API Key from, you must specify the full file path in quotes inside the `source()` function.*
 
-5.  If done correctly, your current R session should fetch for the appropriate R file, read it, and then save your API Key as the variable name (in this case, `PurpleAir_API`) you specified in step 2. This is a great way to read in your API Key you have saved without having to specify it, protecting your access to the PurpleAir dashboard.
+5.  If done correctly, your current R session should fetch for the appropriate R file, read it, and then save your API Key as the variable name (in this case, `PurpleAir_API`) you specified in step 2. This is a great way to save and read in your API Key without having to actually specify it. This also allows you to avoid giving out your unique API Key in the R script you are working on, protecting yourself from others that could access to the PurpleAir dashboard using your API Key.
 
 6.  Once you have read in the variable containing the API Key (in this case, `PurpleAir_API`), you must then define how you will use the API Key with the `setAPIKey()` function. To read in PurpleAir data, we must declare that our API Key will be used to read (not write) PurpleAir data:
 
@@ -273,45 +277,116 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
     setAPIKey(provider = "PurpleAir-read", key = PurpleAir_API)
     ```
 
-    ```{r}
+    <!--# The following illustrates what setAPIKey() does when the example API Key is set. -->
+
+    ```{r setAPIKey}
     #| echo: false
     setAPIKey(provider = "PurpleAir-read", key = "a1b2c3d4e5f6g7h8i9j0")
     ```
 
-7.  The first option `provider` specifies how we will use the API Key. The second option `key` identifies the API Key variable from the `global_vars.R` file.
+    The first option `provider` specifies how we will use the API Key. The second option `key` identifies the API Key variable from the `global_vars.R` file.
 
-8.  Verify that the API Key has been set correctly by running either the `getAPIKey()` function or the `showAPIKeys()` function:
+7.  Verify that the API Key has been set correctly by running either the `getAPIKey()` function or the `showAPIKeys()` function:
 
     ```{r showAPIKeys}
     # Return all API Keys currently set
     showAPIKeys()
     ```
 
-    This is a list of all the API Keys currently set in this R session. You can declare multiple API Keys if you have more than one project.
+    This will list all the API Keys currently set in the R session. You can declare multiple API Keys if you have more than one project.
 
-#### Create a New PAS Data Using API Key {#sec-createPAS}
+#### Initialize Spatial Data {#sec-initialization}
+
+The PAS requires spatial data information to be initialized first before pulling in data from the PurpleAir API dashboard. **Spatial data** is any kind of data that directly or indirectly references a specific geographical area or location. Information about the country, timezones, county, and states will be needed before pulling in PurpleAir data. The `MazamaSpatialUtils` package can be used to download and save the necessary spatial data files needed to create a PAS object. More information about the package and the spatial data that is available for download can be found [here](https://cran.r-project.org/web/packages/MazamaSpatialUtils/vignettes/MazamaSpatialUtils.html). @MazamaSpatialUtils. Make sure the package is loaded using the `library()` function.
+
+By default, the `MazamaSpatialUtils` package comes with three built-in spatial data sets:
+
+-   `SimpleCountries`: country outlines data.
+
+-   `SimpleCountriesEEZ`: country outlines data including Exclusive Economic Zones over water.
+
+-   `SimpleTimeZones`: time zone data.
+
+`SimpleCountries` and `SimpleTimeZones` will be used when creating the PAS object. In addition to these two spatial data sets, we will also need spatial data regarding state codes and U.S. counties. These are not included in the `MazamaSpatialUtils` package. You must download the spatial data sets into a folder and then reference them later during the initialization process.
+
+1.  Set the file directory in quotes where you will save the spacial data with the `setSpatialDataDir()` function:
+
+    ```{r setSpatialDataDir}
+    #| eval: false
+    # Set the file directory to store the PAS data
+    setSpatialDataDir("C:/Users/colegate/Documents/PurpleAir/pas_data")
+    ```
+
+    [*NOTE*]{.underline}*: Be careful how you set your file path location. In Windows, file paths are written with roots separated by `\` characters. These all need to be changed to either `\\` characters or `/` characters in order for the file path to be valid in R.*
+
+```{=html}
+<!-- -->
+```
+2.  Download the state code boundaries spatial data set `NaturalEarthAdm1.rda`:
+
+    ```{r stateCodeDataset}
+    #| eval: false
+    # Install spatial data containing state/province/oblast level boundaries
+    installSpatialData("NaturalEarthAdm1")
+    ```
+
+    [*NOTE*]{.underline}*: Downloading these spatial data sets can take a minute to process. Do not run any R code during the download process or problems may occur.*
+
+3.  Download the U.S. county level boundaries spatial data set `USCensesCounties.rda`:
+
+    ```{r USCountiesDataset}
+    #| eval: false
+    # Install spatial data containing US county level boundaries
+    installSpatialData("USCensusCounties")
+    ```
+
+4.  Check to ensure the download is successful by going to the file directory.
+
+    ![](spatial_folder.png){width="450"}
+
+    [*NOTE:*]{.underline} *It is not necessary to download the `SimpleCountries` and `SimpleTimeZones` data sets. When the `initializeMazamaSpatialUtils()` function is used (described next), these spatial data sets will be loaded automatically without specifying anything.*
+
+5.  Once the two spatial data sets are loaded in a folder, initialize and bring in these spatial data sets with the `initializeMazamaSpatialUtils()` function, specifying the file path you used in Step 1 with the `spatialDataDir` option:
+
+    ```{r initializeMazamaSpatialUtils}
+    #| eval: false
+    # Initialize spatial data processing 
+    initializeMazamaSpatialUtils(spatialDataDir = "C:/Users/colegate/Documents/PurpleAir/pas_data")
+    ```
+
+The `initializeMazamaSpatialUtils()` function must be run **before** a new PAS data object is created. If you do not do this, an error message will result if you try to create one with the `pas_createNew()` function, asking you to initialize first.
+
+#### Create New PAS Data Using API Key {#sec-createPAS}
 
 PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80 seconds prior to a May 31, 2019 firmware upgrade.) Data are processed by PurpleAir and a version of the data is displayed on the PurpleAir website.
 
-You can generate a current PAS object by using the `pas_createNew()` function. A PAS object is large data frame with a record for each PurupleAir sensor channel (2 channels per sensor). The `pas_createNew()` function performs the following tasks under the hood:
+You can generate a current PAS object by using the `pas_createNew()` function. A PAS object is large data frame with a record for each PurupleAir sensor channel (2 channels per sensor). The `pas_createNew()` function performs the following tasks behind the scenes:
 
-1.  Download a raw dataset of the entire PurpleAir network that includes both metadata and recent PM2.5 averages for each deployed sensor across the globe. See `downloadParseSynopticData()` for more info.
+1.  Download a raw dataset of the entire PurpleAir network that includes both metadata and recent PM~2.5~ averages for each deployed sensor across the globe. See `downloadParseSynopticData()` for more info.
 
 2.  Subset and enhance the raw dataset by replacing variables with more consistent, human readable names and adding spatial metadata for each sensor including the nearest official air quality monitor. For a more in depth explanation, see `enhanceSynopticData()`.
 
-To create a new PAS object you must first properly initialize the `MazamaSpatialUtils` package. This requires all the required R packages to be loaded into the R environment first (@sec-packages-load).
+To create a new PAS object you must first properly initialize the `MazamaSpatialUtils` package by using the `initializeMazamaSpatialUtils()` function. The initialization process must be done **before** a new PAS object is created. This may require downloading spatial data sets onto your computer. See @sec-initialization for more details.
 
-```{r initialize}
-#| eval: false
-# Initialization
-initializeMazamaSpatialUtils()
-```
+The pas_createNew() function creates a new PAS object using the spatial data loaded from the `initializeMazamaSpatialUtils()` process. The function contains several options for what kind of spatial data you would like (more information can be found using the help documentation `help(pas_new)`):
 
-The following example will create a brand new PAS object with up-to-the-minute data. Make sure you have set your unique API key (@sec-setAPI) before running this code below.
+-   `countryCodes`: Identify the country to subset the sensor data from.
+
+-   `stateCodes`: Identify the U.S. state codes to subset the sensor data from.
+
+-   `counties`: The US county names or 5-digit FIPS codes.
+
+-   `lookbackDays`: The number of days to look back to include only sensors with data more recent than specified.
+
+-   `location_type`: Whether outside (`0`), inside (`1`), or both (`NULL`) sensors are requested.
+
+The `pas_createNew()` function requires a valid API key with at least the appropriate amount of points. The API Key must be set up **prior** to running this code. See @sec-createAPI for creating an API Key on the PurpleAir API dashboard and @sec-setAPI for more details on setting an API Key.
+
+The following example will create a brand new PAS object with up-to-the-minute data.
 
 [*NOTE*]{.underline}*: You must have the appropriate number of points allocated to the API key in order for the PAS object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.*
 
-```{r pas_live}
+```{r pas_createNew}
 #| eval: false
 # Create new PAS object
 pas_live <- pas_createNew(countryCodes="US",   # Country codes
@@ -323,11 +398,9 @@ pas_live <- pas_createNew(countryCodes="US",   # Country codes
 
 [*NOTE*]{.underline}*: Creating a PAS object can take up to a minute to process.*
 
-<!--# This section will be expanded upon later once we are familiar with using API Keys. -->
+### Create a New PAS from Archived Data {#sec-archive}
 
-### Archive Source {#sec-archive}
-
-It is also possible to load pre-generated PAS objects from a data archive specified by a URL in the `setArchiveBaseUrl()` function. Specify the name of the URL in quotes, as in the example below.
+It is possible to load pre-generated PAS objects from a data archive specified by a URL in the `setArchiveBaseUrl()` function. Specify the name of the URL in quotes, as in the example below.
 
 ```{r setArchiveBaseUrl}
 # Set location of pre-generated data files
@@ -339,7 +412,7 @@ Archived PAS objects can be loaded very quickly with the `pas_load()` function, 
 The following example loads a pre-generated PAS object from April 10, 2020 from the above archive base URL:
 
 ```{r pas_archive}
-# Load a 'pas' object from a specific date
+# Load a PAS object from a specific date
 pas_apr10.2020 <- pas_load(datestamp="20200410")   # '20200410' = '4-10-2020'
 ```
 
