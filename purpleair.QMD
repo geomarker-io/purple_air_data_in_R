@@ -13,7 +13,7 @@ toc-title: Contents
 editor: visual
 bibliography: purpleair.bib
 number-sections: true
-number-depth: 2
+number-depth: 3
 ---
 
 # Introduction {#sec-intro}
@@ -173,7 +173,7 @@ head(sen.data, n=10)
 
 All options must be specified within a function. Each option is then followed by an `=` operator with the argument specified afterwards to pass onto the function. You will see more examples of using options later on.
 
-# PurpleAir Synoptic (PAS) Data {#sec-synoptic}
+# Synoptic (PAS) Data {#sec-synoptic}
 
 **Synoptic data** provides a synopsis - a comprehensive view of something at a moment in time. Synoptic data takes a snapshot of data from all the PurpleAir sensors at a moment in time and uploads them to the cloud. **Spatial data** utilizes synoptic data to visualize data in different spacial locations (such as across the United States) at a given moment. Spatial data from PurpleAir sensors are stored on the cloud as **PurpleAir Synoptic (PAS)** data.
 
@@ -183,7 +183,7 @@ This vignette demonstrates an example workflow for exploring air quality synopti
 
 There are two various was to obtaining PurpleAir Synoptic (PAS) data to use with this vignette. You can create a PAS object using the latest available PurpleAir sensor data from the PurpleAir website within your R environment. This method requires the user to create an account with PurpleAir and obtain an **Application Programming Interface (API)** key unique to the user to make specific queries. You can also pull an archived PAS object of historic PurpleAir data which accomplishes the same task.
 
-### Creating a New PAS from PurpleAir Dashboard {#sec-live}
+### Create a New PAS from PurpleAir Dashboard {#sec-live}
 
 The [**PurpleAir API dashboard**](https://community.purpleair.com/t/new-api-dashboard/3981) allows users to create and manage their API keys and their usage. The site is available at [develop.purpleair.com](https://develop.purpleair.com/home). The dashboard requires a Gmail or Google-associated account to sign in.
 
@@ -508,7 +508,7 @@ pas %>%
 
 It is left as an exercise to plot an interactive map of relative humidity observations for these same sensors.
 
-# Time Series Data {#sec-timeseries}
+# Time Series (PAT) Data {#sec-timeseries}
 
 **Time series** data provides a minute-by-minute database structure for transforming and analyzing [PurpleAir](https://www.purpleair.com/) sensor data. Unlike spatial data, which is geared for analyzing multiple sensors at one point in time, time series data focuses on a single PurpleAir sensor over time. In this manner, time series data allows the user to examine trends in air quality, temperature, and relative humidity recorded by one sensor.
 
