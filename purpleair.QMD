@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 11, 2023"
+date: "July 13, 2023"
 format:
   html:
     output-file: "index.html"
@@ -22,9 +22,11 @@ Air quality sensors have the potential to provide high spatial and temporal reso
 
 In this document, we will present methods of accessing synoptic and time series data using R software with the `AirSensor` package from the PurpleAir interface [@AirSensor]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
 
-## Basic Introduction to R and RStudio
+## Basic Introduction to R and RStudio {#sec-introR}
 
-[*NOTE*]{.underline}*: If you already are familiar with both R and RStudio, you may skip this section.*
+::: callout-note
+If you already are familiar with both R and RStudio, you may skip this section.
+:::
 
 R is a free, open-source software program that is available for Windows, Macs and Linux operating systems [@rcoreteam2013]. Because of this, many statisticians, biostatisticans, and data scientists have been using R to meet their data processing needs. In this tutorial, we will introduce how to install R and RStudio on your computer, try out basic R function commands, and learn how to install and load R packages. This foundation is necessary before we begin to read and explore PurpleAir sensor data.
 
@@ -38,7 +40,7 @@ After installing R on your computer, you will also need to install [RStudio Desk
 
 ![The posit site for downloading RStudio.](rstudio_site.png)
 
-### Opening and Using R
+### Opening and Using R {#sec-openR}
 
 Download the `purpleair.R` file from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R). Make note of the file location on your computer where you save the file. It is recommended that you save the R file in a different location than your **Downloads** folder.
 
@@ -68,7 +70,9 @@ x <- 2    # assign the letter 'x' the value 2
 y <- 9    # assign the letter 'y' the value 9
 ```
 
-[*NOTE:*]{.underline} *If the first line of code begins with the special character symbol `#`, then that line is called a comment. Comments are useful to write down what certain lines of code perform. R will not execute lines of code that begin with `#`. Likewise, R will not execute any code following the `#` symbol. As a result, the `#` symbol can also be used to grey out lines of code that maybe do not work or you wish to not execute without having to delete the entire line of code. In RStudio, comments are easily identified because the lines of code are written in green.*
+::: callout-tip
+If the first line of code begins with the special character symbol `#`, then that line is called a comment. Comments are useful to write down what certain lines of code perform. R will not execute lines of code that begin with `#`. Likewise, R will not execute any code following the `#` symbol. As a result, the `#` symbol can also be used to grey out lines of code that maybe do not work or you wish to not execute without having to delete the entire line of code. In RStudio, comments are easily identified because the lines of code are written in green.
+:::
 
 Highlight the first line of code in the Source Pane `x <- 2`. The special character `<-` assigns the value provided on the right (`2`) to an object on the left (`x`). Hence, this line will set the variable `x` with the value of 2. The next line of code will assign the value `9` to the variable `y`. You can see that these values have been declared by clicking on the **Environment** tab in the Environment Pane.
 
@@ -82,13 +86,15 @@ sqrt(y)   # sqrt = square-root
 
 Since `x` and `y` have been declared, R then calculates `x + y` and `sqrt(y)`. These results change depending on what the values of `x` and `y` are. As an exercise, change the values of `x` and `y` and rerun these lines again.
 
-[*NOTE:*]{.underline} *Make sure you declare both `x` and `y` variables first before running `x + y` and `sqrt(y)` or else R will report an **ERROR** message.*
+::: callout-warning
+Make sure you declare both `x` and `y` variables first before running `x + y` and `sqrt(y)` or else R will report an **ERROR** message.
+:::
 
 A rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available on this site is in the `purpleair.R` file. As you follow along on the site, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it.
 
-[*NOTE:*]{.underline} *Make sure you always include the `.R` file extension at the end of the filename when naming and saving R scripts. RStudio will **not** add this file extension on for you automatically. If you do not include the `.R` suffix, your computer may not recognize how to open the file.*
-
-<!--# Advanced users of R who are familiar with Quarto, a type of document that merges R code and output into a rendered document such as HTML or PDF output can check out the 'purpleair.QMD' and their associated files to study how this site is rendered. -->
+::: callout-important
+Make sure you always include the `.R` file extension at the end of the filename when naming and saving R scripts. RStudio will **not** add this file extension on for you automatically. If you do not include the `.R` suffix, your computer may not recognize how to open the file.
+:::
 
 ### Packages {#sec-packages}
 
@@ -102,6 +108,8 @@ Installing packages is easy and usually requires a one-time installation process
 
 -   [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/ggplot2.pdf): a system for creating graphics [@ggplot2].
 
+-   [`here`](https://cran.r-project.org/web/packages/here/here.pdf): constructs character strings consisting of file paths to reference files on your computer during an R session [@here].
+
 -   [`MazamaCoreUtils`](https://cran.r-project.org/web/packages/MazamaCoreUtils/MazamaCoreUtils.pdf): a suite of utility functions for working with AirSensor package [@MazamaCoreUtils].
 
 -   [`MazamaSpatialUtils`](https://cran.r-project.org/web/packages/MazamaSpatialUtils/MazamaSpatialUtils.pdf): a suite of conversion function to return spatial polygon data [@MazamaSpatialUtils].
@@ -110,12 +118,15 @@ Installing packages is easy and usually requires a one-time installation process
 
 To install these R packages, simply run the following code below.
 
-[*NOTE*]{.underline}*: You may need to restart the R session in order for these packages to successfully install. If this is the case, select **Yes** when prompted to restart the R session. You may have to rerun the R code chunks again after restarting the session.*
+::: callout-note
+You may need to restart the R session in order for these packages to successfully install. If this is the case, select **Yes** when prompted to restart the R session. You may have to rerun the R code chunks again after restarting the session.
+:::
 
 ```{r install_packages}
 #| eval: false
 # This only needs to be run once to install
-install.packages('dplyr', 'ggplot2', 'MazamaCoreUtils', 'MazamaSpatialUtils')
+install.packages('dplyr', 'ggplot2',
+                 'MazamaCoreUtils', 'MazamaSpatialUtils')
 
 # Install the 'AirSensor' package
 devtools::install_github("MazamaScience/AirSensor")
@@ -123,7 +134,9 @@ devtools::install_github("MazamaScience/AirSensor")
 
 Some R package depend on other R packages (called **dependencies**). For example, compiling this Quarto document requires the knitr package for the rending to work. Packages that depend on other packages will install these extra packages automatically if they are not already installed in the users library. You can view all the R packages installed on your computer by clicking on the **Packages** tab in RStudio on the File Manager panel (bottom-right quadrant by default).
 
-[*NOTE:*]{.underline} *R already comes with its own packages (e.g., datasets, graphics, etc.). You do not need to install these packages, as they are already preinstalled when R is first installed.*
+::: callout-tip
+R already comes with its own packages (e.g., datasets, graphics, etc.). You do not need to install these packages, as they are already preinstalled when R is first installed.
+:::
 
 Periodically, authors of R packages will update their package to fix bugs, add more functions and data sets, and to be better compatibble with the latest R software and other packages. You can use the `install.packages()` function to update (read re-install) the package to the latest version. By default, the latest version of the package available on CRAN will be installed.
 
@@ -137,6 +150,7 @@ Once R packages have been installed, you must then load the R package in the R e
 # Load required R packages
 library(dplyr)
 library(ggplot2)
+library(here)
 library(MazamaCoreUtils)
 library(MazamaSpatialUtils)
 library(AirSensor)
@@ -146,7 +160,9 @@ You can check whether a package is successfully loaded by clicking on the **Pack
 
 ![List of Packages installed in the Output Pane. Loaded packages are indicated with a checkmark.](packages.png){width="450"}
 
-[*NOTE*]{.underline}*: Unlike the installation process where the packages are installed only once, you must load these packages every time you start a new R session. When you quit your R session and start a fresh session, you must reload the R packages again.*
+::: callout-warning
+Unlike the installation process where the packages are installed only once, you must load these packages every time you start a new R session. When you quit your R session and start a fresh session, you must reload the R packages again.
+:::
 
 Sometimes, R will print a warning message if a package that is loaded could conflict with another package that is already loaded. This scenario appears if, for example, functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default.
 
@@ -162,7 +178,9 @@ sen <- AirSensor::example_sensor
 sen.data <- sen$data # $ - references 'data' column
 ```
 
-[*NOTE:*]{.underline} *The `AirSensor` package does NOT have to be loaded for this code to work. Indeed, the `AirSensor::example_sensor` pulls the example_sensor data from the `AirSensor` package without loading the entire package. This is useful if you want to avoid loading in multiple packages that you many only use sparingly.*
+::: callout-tip
+The `AirSensor` package does NOT have to be loaded for this code to work. Indeed, the `AirSensor::example_sensor` pulls the example_sensor data from the `AirSensor` package without loading the entire package. This is useful if you want to avoid loading in multiple packages that you many only use sparingly.
+:::
 
 The above R code chunk pulls the example_sensor data from the `AirSensor` without loading the package. The `$` operator is a special character in R. It references the column name within a data frame. In the example above, we want only the `data` column of the `example_sensor` data. We save only the sensor data in a data frame called sen.data. We can then display several first rows of this new R object with the `head()` function. By default, the first 6 rows are displayed. We can change this by declaring an **option** - additional arguments you can provide in an R function to modify its behavior. For example, the option `n=10` in the `head()` function changes the number of rows to display to 10:
 
@@ -172,6 +190,43 @@ head(sen.data, n=10)
 ```
 
 All options must be specified within a function. Each option is then followed by an `=` operator with the argument specified afterwards to pass onto the function. You will see more examples of using options later on.
+
+### Saving/Loading Data {#sec-saveload}
+
+The first thing to do when starting a new R session is to set the **working directory -** a specific file path location on your computer. Whenever R fetches for a file on your computer, it will always check the working directory first. The default working directory may be different depending on how RStudio starts. You can verify the default working directory in RStudio by clicking on **Tools** \> **Global Options** and looking under the **Basic** tab in the **General** section. However, if you click on an R script on your computer, RStudio should start (by default) with the R script displayed in the Source Pane but the working directory will be the folder where the R script used to open RStudio is located. Because the working directory may change depending on how RStudio opens, it is always a good idea to set and verify the working directory before running any code.
+
+You can check the root of the folder the `purpleair.R` file is located by running the `i_am()` function from the `here` package:
+
+```{r i_am}
+# Location of current root directory
+here::i_am("purpleair.R")
+```
+
+The R package `here` can identify the current working directory of your R session based on where you saved the `purpleair.R` file. Since different operating systems have different conventions for writing out their file paths, the `here()` function makes it easy to reference your current working directory on your computer:
+
+```{r here}
+# Save the file path location
+mypath <- here()
+mypath
+```
+
+Running this line saves the current working directory as a character string. This is convenient for referencing where the default file path location R checks for reading in files. Whenever we save data, we will use the file path `mypath` to ensure the data are saved as files in the correct file location on your computer. For example, suppose we wish to save some example data `mtcars` in a file named `cardata.rds`. Here, the `.rds` file extension references a [**R**]{.underline} [**D**]{.underline}**ata [S]{.underline}erialization** file - a convenient way to save and read in data frame objects in R.
+
+```{r save_file}
+# Save data frame as a file
+saveRDS(mtcars, file = here(mypath, "cardata.rds"))
+```
+
+We can then use the same `mypath` to load in the file as well.
+
+```{r load_file}
+# Load data frame into the R session
+readRDS(file = here(mypath, "cardata.rds"))
+```
+
+::: callout-important
+The `mypath` references the file path where the `purpleair.R` file is saved on your computer. If you move the `purpleair.R` file to a different location, you should also move its associated files with it too, or else you will have to manually update the file paths of each associated file. To avoid complications with problems like this, it is always a good idea to keep only the `purpleair.R` and its associated files in a folder. Moving the folder with all its contents included makes the project self-contained since the `here` package will automatically update the file paths to the new folder location.
+:::
 
 # Synoptic (PAS) Data {#sec-synoptic}
 
@@ -233,7 +288,9 @@ You should then see your unique API key for the project. You can modify the allo
 
 ![The unique PurpleAir API Key associated with your project.](purpleair_api.png){width="800"}
 
-[*NOTE*]{.underline}*: API keys are issued per user, not per sensor. Make sure that you have allocated points to the project associated with the API key before continuing on.*
+::: callout-warning
+API keys are issued per user, not per sensor. Make sure that you have allocated points to the project associated with the API key before continuing on.
+:::
 
 #### Fetch and Set API Key {#sec-setAPI}
 
@@ -251,21 +308,27 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
     PurpleAir_API = "a1b2c3d4e5f6g7h8i9j0"
     ```
 
-    [*NOTE:*]{.underline} *Your PurpleAir API Key must be in single-quotes or double-quotes for this to work. API Keys are recognized in R as character strings. In RStudio, character strings are written in a forest green color to easily identify character strings.*
+    ::: callout-caution
+    Your PurpleAir API Key must be in single-quotes or double-quotes for this to work. API Keys are recognized in R as character strings. In RStudio, character strings are written in a forest green color to easily identify character strings.
+    :::
 
-3.  Save this R file in the same folder as the R file you will use the API Key. In this example, we save the R file as `global_vars.R`. Once you have saved the R file that contains your API Key, you may then close the file.
+3.  Save this R file in the **same** folder as the R file you will use the API Key. In this example, we save the R file as `global_vars.R`. Once you have saved the R file that contains your API Key, you may then close the file.
 
-    [*NOTE:*]{.underline} *Make sure you supply the `.R` file extension at the end of the filename when naming and saving the file. RStudio will **not** add this file extension on for you when you go to save the file. If you do not include the `.R` suffix, your computer may not recognize how to open the file.*
+    ::: callout-caution
+    Make sure you supply the `.R` file extension at the end of the file name when naming and saving the file. RStudio will **not** add this file extension on for you when you go to save the file. If you do not include the `.R` suffix, your computer may not recognize how to open the file.
+    :::
 
 4.  In the R script that you want to read in the API Key, use the `source()` function and then reference the R file (in this case, `global_vars.R`) that you saved in the previous step.
 
     ```{r set_API}
     #| eval: false
     # Read 'global_vars.R' file containing the API Key
-    source(global_vars.R)
+    source("global_vars.R")
     ```
 
-    [*NOTE:*]{.underline} *If you save your `global_vars.R` file in a different file location on your computer than the R script that you are using to pull the API Key from, you must specify the full file path in quotes inside the `source()` function.*
+    ::: callout-caution
+    If you save your `global_vars.R` file in a different file location on your computer than the R script that you are using to pull the API Key from, you must specify the full file path in quotes inside the `source()` function. You can use the `here` package to specify the file location where `global_vars.R` is saved. See @sec-saveload for more details.
+    :::
 
 5.  If done correctly, your current R session should fetch for the appropriate R file, read it, and then save your API Key as the variable name (in this case, `PurpleAir_API`) you specified in step 2. This is a great way to save and read in your API Key without having to actually specify it. This also allows you to avoid giving out your unique API Key in the R script you are working on, protecting yourself from others that could access to the PurpleAir dashboard using your API Key.
 
@@ -309,19 +372,30 @@ By default, the `MazamaSpatialUtils` package comes with three built-in spatial d
 
 `SimpleCountries` and `SimpleTimeZones` will be used when creating the PAS object. In addition to these two spatial data sets, we will also need spatial data regarding state codes and U.S. counties. These are not included in the `MazamaSpatialUtils` package. You must download the spatial data sets into a folder and then reference them later during the initialization process.
 
+::: callout-warning
+Ensure that you have the working directory set before completing these steps. In these instructions, the spatial data sets will be saved in the file path of the working directory set by `mypath` (see @sec-saveload for setting and checking your file path), where `mypath` is the character string of your current working directory. You can verify that your working directory is set by running the `here()` function:
+
+```{r}
+# Check the working directory first
+mypath <- here()
+mypath
+```
+:::
+
 1.  Set the file directory in quotes where you will save the spacial data with the `setSpatialDataDir()` function:
 
     ```{r setSpatialDataDir}
     #| eval: false
     # Set the file directory to store the PAS data
-    setSpatialDataDir("C:/Users/colegate/Documents/PurpleAir/pas_data")
+    setSpatialDataDir(here(mypath, "pas_data"))
     ```
 
-    [*NOTE*]{.underline}*: Be careful how you set your file path location. In Windows, file paths are written with roots separated by `\` characters. These all need to be changed to either `\\` characters or `/` characters in order for the file path to be valid in R.*
+    This will create a new folder called `pas_data` inside your current working directory where the downloaded files will be saved to.
 
-```{=html}
-<!-- -->
-```
+    ::: callout-caution
+    Be careful how you set your file path location. R will check to make sure `mypath` is a valid file path (and it exists!) during this step. See section @sec-saveload if you are having trouble defining a valid file path.
+    :::
+
 2.  Download the state code boundaries spatial data set `NaturalEarthAdm1.rda`:
 
     ```{r stateCodeDataset}
@@ -330,7 +404,9 @@ By default, the `MazamaSpatialUtils` package comes with three built-in spatial d
     installSpatialData("NaturalEarthAdm1")
     ```
 
-    [*NOTE*]{.underline}*: Downloading these spatial data sets can take a minute to process. Do not run any R code during the download process or problems may occur.*
+    ::: callout-warning
+    Downloading these spatial data sets can take a minute to process. Do not run any R code during the download process or problems may occur.
+    :::
 
 3.  Download the U.S. county level boundaries spatial data set `USCensesCounties.rda`:
 
@@ -340,18 +416,20 @@ By default, the `MazamaSpatialUtils` package comes with three built-in spatial d
     installSpatialData("USCensusCounties")
     ```
 
-4.  Check to ensure the download is successful by going to the file directory.
+4.  Check to ensure the download is successful by going to the file directory you set as `mypath` on your computer.
 
     ![](spatial_folder.png){width="450"}
 
-    [*NOTE:*]{.underline} *It is not necessary to download the `SimpleCountries` and `SimpleTimeZones` data sets. When the `initializeMazamaSpatialUtils()` function is used (described next), these spatial data sets will be loaded automatically without specifying anything.*
+    ::: callout-tip
+    It is not necessary to download the `SimpleCountries` and `SimpleTimeZones` data sets. When the `initializeMazamaSpatialUtils()` function is used (described next), these spatial data sets will be loaded automatically without specifying anything.
+    :::
 
-5.  Once the two spatial data sets are loaded in a folder, initialize and bring in these spatial data sets with the `initializeMazamaSpatialUtils()` function, specifying the file path you used in Step 1 with the `spatialDataDir` option:
+5.  Once the two spatial data sets are loaded in a folder, initialize and bring in these spatial data sets with the `initializeMazamaSpatialUtils()` function, specifying the file path `mypath` you used along with the new folder pas_data in Step 1 with the `spatialDataDir` option:
 
     ```{r initializeMazamaSpatialUtils}
     #| eval: false
     # Initialize spatial data processing 
-    initializeMazamaSpatialUtils(spatialDataDir = "C:/Users/colegate/Documents/PurpleAir/pas_data")
+    initializeMazamaSpatialUtils(spatialDataDir = here(mypath, "pas_data"))
     ```
 
 The `initializeMazamaSpatialUtils()` function must be run **before** a new PAS data object is created. If you do not do this, an error message will result if you try to create one with the `pas_createNew()` function, asking you to initialize first.
@@ -384,7 +462,9 @@ The `pas_createNew()` function requires a valid API key with at least the approp
 
 The following example will create a brand new PAS object with up-to-the-minute data.
 
-[*NOTE*]{.underline}*: You must have the appropriate number of points allocated to the API key in order for the PAS object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.*
+::: callout-important
+You must have the appropriate number of points allocated to the API key in order for the PAS object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.
+:::
 
 ```{r pas_createNew}
 #| eval: false
@@ -396,7 +476,9 @@ pas_live <- pas_createNew(countryCodes="US",   # Country codes
                           location_type=NULL)  # 0 - outside; 1 - inside, NULL - both
 ```
 
-[*NOTE*]{.underline}*: Creating a PAS object can take up to a minute to process.*
+::: callout-note
+Creating a PAS object can take up to a minute to process.
+:::
 
 ### Create a New PAS from Archived Data {#sec-archive}
 
@@ -418,20 +500,22 @@ pas_apr10.2020 <- pas_load(datestamp="20200410")   # '20200410' = '4-10-2020'
 
 ## Exploring Spatial Data {#sec-PAS-explore}
 
-[*NOTE*]{.underline}*: All the following R code chunks can be adapted to your own PAS object you create live (@sec-live) or archived (@sec-archive). For this demonstration, we will be using the example PAS from the `AirSensor` package to avoid long waiting times. This example PAS was generated on March 15, 2023 for outside sensors in California:*
+::: callout-note
+All the following R code chunks can be adapted to your own PAS object you create live (@sec-live) or archived (@sec-archive). For this demonstration, we will be using the example PAS from the `AirSensor` package to avoid long waiting times. This example PAS was generated on March 15, 2023 for outside sensors in California:
 
 ```{r pas_example}
 # Example PAS from AirSensor package
 pas <- AirSensor::example_pas
 ```
 
-*For more information about the example PAS, run the code below. This opens up a help documentation describing how this PAS is generated:*
+\*For more information about the example PAS, run the code below. This opens up a help documentation describing how this PAS is generated:
 
 ```{r pas_help}
 #| eval: false
 # Open help documentation for example PAS
 help(example_pas)
 ```
+:::
 
 Take a look at the first 10 rows of the PAS data frame:
 
@@ -451,7 +535,9 @@ At a glance, the PAS has several useful columns of data we can explore. There ar
 
 We can pull only those columns that begin with this prefix and store them as a new R object. Each row corresponds to one sensor so it is also a good idea to include the `locationID` of each sensor with our new `pm25` object. The code below takes the pas R object and then uses the `select()` function to choose `locationID` that starts with `pm2.5_` as the variable name (notice the use of quotes here!). The `%>%` operator is called a pipeline operator that is available in the `dplyr` package (and others) which can accomplish this process in one execution.
 
-[*NOTE*]{.underline}*: The variable names of your PAS object may differ slightly from the examples provided here. Make sure you adapt the variable names such as `locationID` and `pm2.5_` exactly (case-sensitive, spelling, punctuation) so they match as specified in your PAS object.*
+::: callout-caution
+The variable names of your PAS object may differ slightly from the examples provided here. Make sure you adapt the variable names such as `locationID` and `pm2.5_` exactly (case-sensitive, spelling, punctuation) so they match as specified in your PAS object.
+:::
 
 ```{r pm25}
 # Take a look at only PM2.5 data
@@ -522,7 +608,9 @@ Once the PAS data frame has been loaded, we then create a **PurpleAir Time Serie
 
 The following example will create a brand new PAT object with up-to-the-minute data. Assuming a PAS object has been loaded (@sec-createPAS), we use it to create the PAT object with a specific `sensor_index`. Make sure you have set your API Key (@sec-setAPI) before running this code below.
 
-[*NOTE*]{.underline}*: You must have the appropriate number of points allocated to the API key in order for the PAT object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.*
+::: callout-important
+You must have the appropriate number of points allocated to the API key in order for the PAT object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.
+:::
 
 ```{r pat}
 #| eval: false
@@ -536,26 +624,30 @@ pat <- pat_createNew(pas=pas,  # Your PAS object name
   )
 ```
 
-[*NOTE*]{.underline}*: Creating a PAT object can take up to a minute to process.*
+::: callout-note
+Creating a PAT object can take up to a minute to process.
+:::
 
 <!--# This section will be expanded upon later once we are familiar with using API Keys. -->
 
 ## Exploring Temporal Data {#sec-PAT-explore}
 
-[*NOTE*]{.underline}*: All the following R code chunks can be adapted to your own PAT object you create (@sec-pat). For this demonstration, we will be using the example PAT from the AirSensor package to avoid long waiting times. The example PAT was generated for a specific sensor in Seattle, Washington between July 1, 2022 and July 8, 2022.*
+::: callout-note
+All the following R code chunks can be adapted to your own PAT object you create (@sec-pat). For this demonstration, we will be using the example PAT from the AirSensor package to avoid long waiting times. The example PAT was generated for a specific sensor in Seattle, Washington between July 1, 2022 and July 8, 2022:
 
 ```{r pat_example}
 # Example PAT from AirSensor package
 pat <- AirSensor::example_pat
 ```
 
-*For more information about the example PAT, run the code below. This opens up a help documentation describing how this PAT is generated:*
+For more information about the example PAT, run the code below. This opens up a help documentation describing how this PAT is generated:
 
 ```{r pat_help}
 #| eval: false
 # Open help documentation for example PAT
 help(example_pat)
 ```
+:::
 
 Let's explore the PAT object:
 
