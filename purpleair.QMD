@@ -22,6 +22,10 @@ Air quality sensors have the potential to provide high spatial and temporal reso
 
 In this document, we will present methods of accessing synoptic and time series data using R software with the `AirSensor` package from the PurpleAir interface [@AirSensor]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
 
+::: callout-note
+This rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available in this vignette is in the `purpleair.R` file that is also hosted on our GitHub page. As you follow along with this tutorial, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it. You will also need the `new_pas.R` file on our GitHub page to create synoptic data, which we will discuss in @sec-createPAS.
+:::
+
 ## Basic Introduction to R and RStudio {#sec-introR}
 
 ::: callout-note
@@ -90,7 +94,7 @@ Since `x` and `y` have been declared, R then calculates `x + y` and `sqrt(y)`. T
 Make sure you declare both `x` and `y` variables first before running `x + y` and `sqrt(y)` or else R will report an **ERROR** message.
 :::
 
-A rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available on this site is in the `purpleair.R` file. As you follow along on the site, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it.
+This rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available on this site is in the `purpleair.R` file. As you follow along on the site, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it.
 
 ::: callout-important
 Make sure you always include the `.R` file extension at the end of the filename when naming and saving R scripts. RStudio will **not** add this file extension on for you automatically. If you do not include the `.R` suffix, your computer may not recognize how to open the file.
@@ -294,6 +298,8 @@ API keys are issued per user, not per sensor. Make sure that you have allocated 
 
 #### Fetch and Set API Key {#sec-setAPI}
 
+<!--# This section here will be simplified with a source file 'new_pas.R' that will do most of this process automatically. -->
+
 The API Key is an access token that allows you to pull PurpleAir sensor data from the cloud into your R session environment (see @sec-createAPI to learn how to create API Keys). It is not ideal to leave your API Key in a R script. If you share any of these documents that include your personal API Key with someone else, when they request PurpleAir sensor data, they will be using your points! A better solution is to save your API Key in a separate file that you keep and then provide code in the R script you are working worth that then looks for the file with your API Key and reads in the key.
 
 In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7h8i9j0` and the variable name to reference it is called `PurpleAir_API`.
@@ -359,6 +365,8 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
     This will list all the API Keys currently set in the R session. You can declare multiple API Keys if you have more than one project.
 
 #### Initialize Spatial Data {#sec-initialization}
+
+<!--# This section will be eliminated. A source file 'new_pas.R' will do this process automatically. -->
 
 The PAS requires spatial data information to be initialized first before pulling in data from the PurpleAir API dashboard. **Spatial data** is any kind of data that directly or indirectly references a specific geographical area or location. Information about the country, timezones, county, and states will be needed before pulling in PurpleAir data. The `MazamaSpatialUtils` package can be used to download and save the necessary spatial data files needed to create a PAS object. More information about the package and the spatial data that is available for download can be found [here](https://cran.r-project.org/web/packages/MazamaSpatialUtils/vignettes/MazamaSpatialUtils.html). @MazamaSpatialUtils. Make sure the package is loaded using the `library()` function.
 
@@ -435,6 +443,8 @@ mypath
 The `initializeMazamaSpatialUtils()` function must be run **before** a new PAS data object is created. If you do not do this, an error message will result if you try to create one with the `pas_createNew()` function, asking you to initialize first.
 
 #### Create New PAS Data Using API Key {#sec-createPAS}
+
+<!--# This section will be rewritten and simplified. A source file 'new_pas.R' will do this process automatically. -->
 
 PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80 seconds prior to a May 31, 2019 firmware upgrade.) Data are processed by PurpleAir and a version of the data is displayed on the PurpleAir website.
 
