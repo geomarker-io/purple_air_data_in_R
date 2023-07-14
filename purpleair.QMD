@@ -407,6 +407,7 @@ The `new_pas()` function has several options available you can specify:
 As an example, suppose we wish to create a PAS showcasing all (indoor and outdoor) PurpleAir sensor data within Hamilton County, Ohio from the past 7 days. The PAS will be created and saved in a file called `"PAS_Hamilton.rds"`. Here is how the `new_pas()` is used to achieve this:
 
 ```{r new_pas}
+#| eval: false
 # Create new PAS of Hamilton County, Ohio sensors from past 7 days
 pas <- new_pas(pas_filename = "PAS_Hamilton.rds",
                folder_location = here(),
@@ -462,7 +463,7 @@ The following example loads a pre-generated PAS object from April 10, 2020 from 
 
 ```{r pas_archive}
 # Load a PAS object from a specific date
-pas_apr10.2020 <- pas_load(datestamp="20200410")   # '20200410' = '4-10-2020'
+pas_apr10 <- pas_load(datestamp="20200410")   # '20200410' = '4-10-2020'
 ```
 
 ## Exploring Spatial Data {#sec-PAS-explore}
@@ -814,7 +815,7 @@ By default, the `MazamaSpatialUtils` package comes with three built-in spatial d
 ::: callout-warning
 Ensure that you have the working directory set before completing these steps. In these instructions, the spatial data sets will be saved in the file path of the working directory set by `mypath` (see @sec-saveload for setting and checking your file path), where `mypath` is the character string of your current working directory. You can verify that your working directory is set by running the `here()` function:
 
-```{r}
+```{r check_wd}
 # Check the working directory first
 mypath <- here()
 mypath
