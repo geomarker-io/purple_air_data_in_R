@@ -607,7 +607,7 @@ From this scanner in the PAS file `PAS_Hamilton.rds` that was created in @sec-cr
 
 ```{r new_pat}
 #| eval: false
-# Create new PAt of one sensor on the night of July 4, 2023
+# Create new PAT of one sensor from July 1 through July 8
 mypat <- new_pat(pat_filename = "July_CFD12.rds",
                  folder_location = here(),
                  pas_filename = "PAS_Hamilton.rds",
