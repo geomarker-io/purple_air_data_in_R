@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 13, 2023"
+date: "July 14, 2023"
 format:
   html:
     output-file: "index.html"
@@ -23,7 +23,7 @@ Air quality sensors have the potential to provide high spatial and temporal reso
 In this document, we will present methods of accessing synoptic and time series data using R software with the `AirSensor` package from the PurpleAir interface [@AirSensor]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
 
 ::: callout-note
-This rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available in this vignette is in the `purpleair.R` file that is also hosted on our GitHub page. As you follow along with this tutorial, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it. You will also need the `new_pas.R` file on our GitHub page to create synoptic data, which we will discuss in @sec-createPAS.
+This rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available in this vignette is in the `purpleair.R` file that is also hosted on our GitHub page. As you follow along with this tutorial, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it. You will also need the `new_pas.R` file and the `new_pat.R` file on our GitHub page to create synoptic data and time series data.
 :::
 
 ## Basic Introduction to R and RStudio {#sec-introR}
@@ -38,7 +38,7 @@ R is a free, open-source software program that is available for Windows, Macs an
 
 The latest version of R available as of the time of this writing is R-4.3.1. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system. Download the `base` distribution of R from the website and follow the prompts to install R on your computer.
 
-![The Comprehensive R Archive Network website for downloading R.](r_site.png)
+![The Comprehensive R Archive Network (CRAN) website for downloading R.](r_site.png)
 
 After installing R on your computer, you will also need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an integrated development environment (IDE) to help data scientists be more productive with R [@rstudioteam2020a]. RStudio is a dashboard hosted by [posit](https://posit.co/) that allows ease of access to using R, especially if you are using R for the first time. The posit website link should automatically direct you to the appropriate version of RStudio you will need to download and install on your computer. Once you have both R and RStudio installed, open up the RStudio software.
 
@@ -206,6 +206,7 @@ The first thing to do when starting a new R session is to set the **working dire
 You can check the root of the folder the `purpleair.R` file is located by running the `i_am()` function from the `here` package:
 
 ```{r i_am}
+#| eval: false
 # Location of current root directory
 here::i_am("purpleair.R")
 ```
@@ -312,7 +313,7 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
 
     ```{r API_KEY}
     #| eval: false
-    # Below is the first line of the 'global_vars.R' file
+    # Below is the first line of the 'API_KEY.R' file
     PurpleAir_API = "a1b2c3d4e5f6g7h8i9j0"
     ```
 
@@ -330,8 +331,8 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
 
     ```{r set_API}
     #| eval: false
-    # Read 'global_vars.R' file containing the API Key
-    source("global_vars.R")
+    # Read 'API_KEY.R' file containing the API Key
+    source("API_KEY.R")
     ```
 
     ::: callout-caution
@@ -355,7 +356,7 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
     setAPIKey(provider = "PurpleAir-read", key = "a1b2c3d4e5f6g7h8i9j0")
     ```
 
-    The first option `provider` specifies how we will use the API Key. The second option `key` identifies the API Key variable from the `global_vars.R` file.
+    The first option `provider` specifies how we will use the API Key. The second option `key` identifies the API Key variable from the `API_KEY.R` file.
 
 7.  Verify that the API Key has been set correctly by running either the `getAPIKey()` function or the `showAPIKeys()` function:
 
@@ -366,7 +367,7 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
 
     This will list all the API Keys currently set in the R session. You can declare multiple API Keys if you have more than one project.
 
-#### Read Live PAS from PurpleAir {#sec-read}
+#### Read Live PAS from PurpleAir Dashboard {#sec-createPAS}
 
 PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80 seconds prior to a May 31, 2019 firmware upgrade.) Data are processed by PurpleAir and a version of the data is displayed on the PurpleAir website.
 
@@ -380,12 +381,12 @@ source("new_pas.R")
 ```
 
 ::: callout-tip
-Before continuing, make sure you have created an API Key @sec-createAPI and saved it to a file @sec-setAPI. The `new_pas()` will check if a API Key has been loaded, and if it does not find one, it will automatically search for the API Key in the R script you specify. As a result, it is not required that the API Key be set prior to running this function.
+Before continuing, make sure you have created an API Key (@sec-createAPI) and saved it to a file (@sec-setAPI). The `new_pas()` will check if a API Key has been loaded, and if it does not find one, it will automatically search for the API Key in the R script you specify. As a result, it is not required that the API Key be set prior to running this function.
 :::
 
 The `new_pas()` function has several options available you can specify:
 
--   `file_name`: Name of the PAS file (in quotes) that will be created.
+-   `pas_filename`: Name of the PAS file (in quotes) that will be created.
 
 -   `folder_location`: The file path of the current root directory where the PAS will be saved to.
 
@@ -407,7 +408,7 @@ As an example, suppose we wish to create a PAS showcasing all (indoor and outdoo
 
 ```{r new_pas}
 # Create new PAS of Hamilton County, Ohio sensors from past 7 days
-pas <- new_pas(file_name = "PAS_Hamilton.rds",
+pas <- new_pas(pas_filename = "PAS_Hamilton.rds",
                folder_location = here(),
                API_filename = "API_KEY.R",
                folder_name = "pas_data",
@@ -422,10 +423,10 @@ When this code is run, the following steps are performed in this order:
 
 1.  The necessary packages `here`, `AirSensor`, and `MazamaSpatialUtils` are loaded if they are not already. This is to ensure all necessary functions are recognized and the rest of the steps will work.
 
-2.  The function then checks if a PAS with `file_name` has already been created inside the root working directory `folder_location`. If the function finds the file, it is then loaded into the R environment. If the file does not exist, the function then asks the user whether they would like to create a new PAS using points associated with the API Key. Respond to the prompt by typing either `Y` (Yes) to continue with the steps (required if you have never created a PAS file) or `N` (No) to abort the process.
+2.  The function then checks if a PAS with `pas_filename` has already been created inside the root working directory `folder_location`. If the function finds the file, it is then loaded into the R environment. If the file does not exist, the function then asks the user whether they would like to create a new PAS using points associated with the API Key. Respond to the prompt by typing either `Y` (Yes) to continue with the steps (required if you have never created a PAS file) or `N` (No) to abort the process.
 
     ::: callout-tip
-    If you run this function after creating a PAS file named `file_name`, it should detect that file and read it in automatically without calling on the PurpleAir dashboard and having to waste points recreating the PAS data.
+    If you run this function after creating a PAS file named `pas_filename`, it should detect that file and read it in automatically without calling on the PurpleAir dashboard and having to waste points recreating the PAS data.
     :::
 
 3.  The function then checks if an API Key has been set for the current R session. If you followed the steps in @sec-setAPI, `new_pas()` should verify that an API Key has already been set and a message should be displayed. If no API Key is found, the function then checks the folder specified by `folder_location` for the file `API_KEY.R`. If the function finds it, then the file is read in and the variable `PurpleAir_API` is then set as the API Key. An error message displays if the function is unable to find the file with the API Key or set the API Key.
@@ -444,7 +445,7 @@ When this code is run, the following steps are performed in this order:
     You must have enough points tied the API Key to complete the operation. The usage of your points varies depending on the query - click [here](https://community.purpleair.com/t/api-pricing/4523) for more details. If you do not have enough points, the operation will not be completed and an error message will be displayed. Click [here](https://api.purpleair.com/#api-keys-check-api-key) to learn more about the API Key and the data it can return. If you need to add more points, you can purchase more points to your account by clicking [here](https://community.purpleair.com/t/api-pricing/4523). Be very careful with how frequently you query the PurpleAir dashboard as you do not want to waste your points. Click [here](https://community.purpleair.com/t/api-use-guidelines/1589) to learn more about how you can optimize your points usage.
     :::
 
-7.  The PAS object is then saved into a file named `file_name` in the `folder_location` folder on your computer. The next time that you run `new_pas()`, the function will check that the file is still present within the folder and read it in to your R environment for you.
+7.  The PAS object is then saved into a file named `pas_filename` in the `folder_location` folder on your computer. The next time that you run `new_pas()`, the function will check that the file is still present within the folder and read it in to your R environment for you.
 
 ### Create a New PAS from Archived Data {#sec-archive}
 
@@ -474,7 +475,7 @@ All the following R code chunks can be adapted to your own PAS object you create
 pas <- AirSensor::example_pas
 ```
 
-\*For more information about the example PAS, run the code below. This opens up a help documentation describing how this PAS is generated:
+For more information about the example PAS and how it was created, run the code below. This opens up a help documentation in the Output Pane:
 
 ```{r pas_help}
 #| eval: false
@@ -516,7 +517,7 @@ Each row of this new `pm25_data` object corresponds to one PurpleAir sensor at a
 
 <!--# As of a recent 'knitr' update version 1.43, the leaflets are not rendering correctly in the HMTL output Quarto renders. There is a 'eval' option to turn off the leaflets if they do not display correctly or a ERROR message results when rendering the HTML output. To get them to render correctly, you must downgrade 'knitr' to version 1.42, shown below: -->
 
-```{r}
+```{r knitr_down}
 #| eval: false
 #| echo: false
 # Remove latest version of 'knitr' package (if upgraded past 1.42)
@@ -538,7 +539,11 @@ pas %>%
 
 A map is shown of all the sensors with their 1 hour average PM~2.5~ measurements. The icons represent one scanner, colored based on their measurement. Clicking on one of the icons brings up the device's ID, sensor index, location, temperature, humidity, and average PM~2.5~ measurements over a 1-hour and 24-hour period.
 
-PAS data can consists of many sensors, resulting in many icons to select from in the map. We may wish to filter sensors based on their readings so that only those sensors who meet our filtering criteria appear on the map. This is useful, for example, if we are interested in identifying locations with high PM~2.5~ concentrations. The `pas_filter()` function can be used to filter sensors by state (with stateCode) and by a filtering criterion before it is passed to the `pas_leaflet()` function. In the example below, we identify PurpleAir sensors in California who register at least a 24-hour PM~2.5~ average of 12.0 micrograms per cubic meter - the equivalent of registering a Moderate [Air Quality Index (AQI)](https://www.epa.gov/sites/default/files/2016-04/documents/2012_aqi_factsheet.pdf):
+::: callout-note
+Take notice of the `sensor_index` that is displayed for each sensor. You will need a `sensor_index` to create a PAT file later in @sec-pat.
+:::
+
+PAS data can consists of many sensors, resulting in many icons to select from in the map. We may wish to filter sensors based on their readings so that only those sensors who meet our filtering criteria appear on the map. This is useful, for example, if we are interested in identifying locations with high PM~2.5~ concentrations. The `pas_filter()` function can be used to filter sensors by state (with `stateCode`) and by a filtering criterion before it is passed to the `pas_leaflet()` function. In the example below, we identify PurpleAir sensors in California who register at least a 24-hour PM~2.5~ average of 12.0 micrograms per cubic meter - the equivalent of registering a Moderate [Air Quality Index (AQI)](https://www.epa.gov/sites/default/files/2016-04/documents/2012_aqi_factsheet.pdf):
 
 ```{r leaflet_filter}
 #| eval: true
@@ -564,37 +569,103 @@ It is left as an exercise to plot an interactive map of relative humidity observ
 
 **Time series** data provides a minute-by-minute database structure for transforming and analyzing [PurpleAir](https://www.purpleair.com/) sensor data. Unlike spatial data, which is geared for analyzing multiple sensors at one point in time, time series data focuses on a single PurpleAir sensor over time. In this manner, time series data allows the user to examine trends in air quality, temperature, and relative humidity recorded by one sensor.
 
-In this section, we will demonstrate an example analysis of an individual monitor located in Seattle, Washington over a two-month duration in which the Pacific Northwest experienced [hazardous air-quality conditions](https://www.usnews.com/news/healthiest-communities/articles/2018-08-19/air-quality-to-worsen-in-northwest-as-smoke-returns) caused by wildfires in British Columbia, Canada [@callahan_pat_2023].
-
 ## Loading PAT Data {#sec-pat}
 
-<!--# This section still needs to be finished. -->
+PurpleAir sensor readings are uploaded to the cloud every 120 seconds where they are stored for download and display on the PurpleAir website. After every interval, the synoptic data is refreshed and the outdated synoptic data is then stored in a [ThingSpeak](https://thingspeak.com) database.
 
-PurpleAir sensor readings are uploaded to the cloud every 120 seconds where they are stored for download and display on the PurpleAir website. After every interval, the synoptic data is refreshed and the outdated synoptic data is then stored in a [ThingSpeak](https://thingspeak.com) database. In order to access the ThingSpeak channel API we must first load the synoptic database, which was discussed in @sec-createPAS.
+In order to access the ThingSpeak channel API we must first load the synoptic database object (PAS), which was discussed in @sec-createPAS. Once the PAS data frame has been loaded, we then create a **PurpleAir Time Series (PAT)** object by specifying the sensor and the dates from which to pull data from. Since this requires drawing data from the PurpleAir API dashboard, an API key (@sec-setAPI) is required to access this data to create the PAT object.
 
-Once the PAS data frame has been loaded, we then create a **PurpleAir Time Series (PAT)** object by specifying the sensor and the dates from which to pull data from. Since this requires drawing data from the PurpleAir API dashboard, an API key (@sec-setAPI) is required to access this data to create the PAT object.
+Just like the `new_pas.R` script in @sec-createPAS, the R script `new_pat.R` contains a function `new_pat()` that performs the process of creating a PAT data frame automatically. To load in the function, you must source the function from the `new_pat.R`, assuming it has been saved to same working directory as the `purpleair.R` script (@sec-saveload ).
 
-The following example will create a brand new PAT object with up-to-the-minute data. Assuming a PAS object has been loaded (@sec-createPAS), we use it to create the PAT object with a specific `sensor_index`. Make sure you have set your API Key (@sec-setAPI) before running this code below.
-
-::: callout-important
-You must have the appropriate number of points allocated to the API key in order for the PAT object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.
-:::
-
-```{r pat}
-#| eval: false
-# Create new PAT object
-pat <- pat_createNew(pas=pas,  # Your PAS object name
-    sensor_index="3515",       # PurpleAir sensor ID
-    startdate="2022-07-01",    # Start Date
-    enddate="2022-07-08",      # End Date
-    timezone="UTC",
-    verbose=TRUE
-  )
+```{r load_new_pat}
+# Load in the new_pat() function from file
+source("new_pat.R")
 ```
 
-::: callout-note
-Creating a PAT object can take up to a minute to process.
+::: callout-warning
+**A PAS file is required to create a PAT file.** Make sure you have created an PAS file @sec-createPAS and have a API Key (@sec-createAPI) saved to a file (@sec-setAPI). The `new_pat()` will check for the PAS file that you specify. If it does not detect a PAS file, the function will ask you to create a PAS file first using the `new_pas()` function before using `new_pat()`. The `new_pat()` can create a new PAT file only if a API Key has been loaded. If the function does not find one, it will automatically search for the API Key in the R script you specify. It is not required that the API Key be set prior to running this function.
 :::
+
+PAT files put emphasis on a single PurpleAir sensor. Each sensor comes with its own unique identifier. In the PAS file, this identifier is called the `sensor_index`. All measurements taken by a scanner will be authored by the `sensor_index`. If one is only interested in the measurements of a particular scanner, the PAT file can pull information from the PurpleAir dashboard for that scanner over time.
+
+::: callout-tip
+It is highly recommended that you select only one sensor from the PAS file you would like to examine over time. It is possible to create PAT files for more than one sensor, however, it is more convenient to have one PAT file represent just one PurpleAir sensor. This creates PAT files of manageable size for portability. Lots of information is collected from a single sensor and file sizes can become large if multiple sensors or multiple periods are requested. You can always read in multiple PAT files and combine them later if needed.
+:::
+
+The first step in creating the PAT file is to identify the sensor to record measurements from. In this example, the PurpleAir sensor we will study is located at Cincinnati's Fire Department Station 12, located at 3001 Spring Grove Ave, Cincinnati, OH 45225. Their PurpleAir sensor has `sensor_index` 176557.
+
+::: callout-tip
+One easy way of identifying the `sensor_index` of the PurpleAir sensor you want is to use the [online PurpleAir map](https://map.purpleair.com/1/mAQI/a10/p604800/cC0?select=176557#12.87/39.12646/-84.53578). Use this map to locate the sensor you wish to study and click on its icon. Hover your cursor over the text **Get This Widget**, revealing a pop-up window that contains the `sensor_index`.
+
+![The `sensor_index` is usually shown in the `id` field of the widget on the [PurpleAir map](https://map.purpleair.com/1/mAQI/a10/p604800/cC0?select=176557#12.87/39.12646/-84.53578).](purpleair_map.png){width="350"}
+
+A sure-fire way to identify a particular scanner and determine its `sensor_index` is to create a map of all the scanners inside the PAS data using `pas_leaflet()` to plot them (@sec-PAS-explore). You can then use the map to find the scanner you wish to analyze. Clicking on the icon of the scanner on the map will display information about the scanner, including its `sensor_index`.
+:::
+
+From this scanner in the PAS file `PAS_Hamilton.rds` that was created in @sec-createPAS, we wish to create a PAT file showcasing all PurpleAir sensor data from this sensor (`sensor_index=176557`) from July 1, 2023 to July 8, 2023. The PAT will be created and saved in a file called `"July_CFD12.rds"`. Here is how the `new_pat()` is used to achieve this:
+
+```{r new_pat}
+#| eval: false
+# Create new PAt of one sensor on the night of July 4, 2023
+mypat <- new_pat(pat_filename = "July_CFD12.rds",
+                 folder_location = here(),
+                 pas_filename = "PAS_Hamilton.rds",
+                 API_filename = "API_KEY.R",
+                 sensor_index = 176557,
+                 start_date = "2023-07-01",
+                 end_date = "2023-07-08",
+                 time_zone = "UTC")
+```
+
+The `new_pat()` function has several options available you can specify:
+
+-   `pat_filename`: Name of the PAT file (in quotes) that will be created.
+
+-   `folder_location`: The file path of the current root directory where the PAT will be saved to.
+
+-   `pas_filename`: Name of the PAS file (in quotes) that will be used to identify the sensor_index. A PAS file must be created before creating a PAT file. See @sec-createPAS for details.
+
+-   `API_filename`: The name of the file (in quotes) where the API Key is saved as the variable name `PurpleAir_API` (@sec-setAPI).
+
+-   `sensor_index`: The unique number indicator of the PurpleAir sensor you wish to analyze.
+
+-   `start_date`: The start date to start reading data (in quotes), formatted as `"YYYY-MM-DD"`.
+
+-   `end_date`: The end date to stop reading data (in quotes), formatted as `"YYYY-MM-DD"`.
+
+-   `time_zone`: The Olson timezone used to interpret dates (in quotes); default is UTC.
+
+-   `average`: Temporal averaging in minutes performed by PurpleAir; default is 0, meaning all data recorded by the sensor is instant. Values include 10, 30, 60 (hour), 360, 1440 (day).
+
+When this code is run, the following steps are performed in this order:
+
+1.  The necessary packages `here`, `AirSensor`, and `MazamaSpatialUtils` are loaded if they are not already. This is to ensure all necessary functions are recognized and the rest of the steps will work.
+
+2.  The function then checks if a PAT with `pat_filename` has already been created inside the root working directory `folder_location`. If the function finds the file, it is then loaded into the R environment. If the file does not exist, the function then asks the user whether they would like to create a new PAT using points associated with the API Key. Respond to the prompt by typing either `Y` (Yes) to continue with the steps (required if you have never created a PAT file) or `N` (No) to abort the process.
+
+    ::: callout-tip
+    If you run this function after creating a PAT file named `pas_filename`, it should detect that file and read it in automatically without calling on the PurpleAir dashboard and having to waste points recreating the PAT data.
+    :::
+
+3.  The function then checks if an API Key has been set for the current R session. If you followed the steps in @sec-setAPI, `new_pat()` should verify that an API Key has already been set and a message should be displayed. If no API Key is found, the function then checks the folder specified by `folder_location` for the file `API_KEY.R`. If the function finds it, then the file is read in and the variable `PurpleAir_API` is then set as the API Key. An error message displays if the function is unable to find the file with the API Key or set the API Key.
+
+    ::: callout-warning
+    You must create and set a valid API Key before you can read data from the PurpleAir dashboard. This involves creating a project with the PurpleAir dashboard and then saving the API Key to your computer as its own file (in this case, `API_KEY.R`). The API Key is unique and is tied to the user, not the project. You do not need a new API Key each time a new PAT is created. For more information, see @sec-createAPI for creating API Keys and @sec-setAPI for saving and setting the API Key.
+    :::
+
+4.  The function next checks that the required PAS file exists. If the file does not exist, the user is asked to run `new_pas()` function to create one first.
+
+    ::: callout-tip
+    If you used `new_pas()` in @sec-createPAS, then the PAS file should already exist and the new_pat() function should automatically read it in for you.
+    :::
+
+5.  The function then proceeds to the PurpleAir dashboard and retrieves all the data from the sensor from the cloud between the `start_date` and `end_date` using the API Key and the PAS file. Points allocated with the PurpleAir API Key are then deducted. The data is then combined with the spatial data files to create the PAS object.
+
+    ::: callout-important
+    You must have enough points tied the API Key to complete the operation. The usage of your points varies depending on the query - click [here](https://community.purpleair.com/t/api-pricing/4523) for more details. If you do not have enough points, the operation will not be completed and an error message will be displayed. Click [here](https://api.purpleair.com/#api-keys-check-api-key) to learn more about the API Key and the data it can return. If you need to add more points, you can purchase more points to your account by clicking [here](https://community.purpleair.com/t/api-pricing/4523). Be very careful with how frequently you query the PurpleAir dashboard as you do not want to waste your points. Click [here](https://community.purpleair.com/t/api-use-guidelines/1589) to learn more about how you can optimize your points usage.
+    :::
+
+6.  The PAT object is then saved into a file named `pat_filename` in the `folder_location` folder on your computer. The next time that you run `new_pat()`, the function will check that the file is still present within the folder and read it in to your R environment for you.
 
 ## Exploring Temporal Data {#sec-PAT-explore}
 
@@ -718,15 +789,17 @@ Special thanks to Dr. Cole Brokamp and Dr. Patrick Ryan for allowing me to speak
 
 # Appendix {#sec-appendix}
 
-The following sections describes in more detail what the `new_pas()` function does behind the scenes. This information has been included here to discuss in more detail the steps outlined in @sec-read. Refer to these sections if you want to understand the processes that is required to create the PAS object from PurpleAir dashboard.
+The following sections describes in more detail what the `new_pas()` function does behind the scenes. This information has been included here to discuss in more detail the steps outlined in @sec-createPAS. Refer to these sections if you want to understand the processes that is required to create the PAS object from PurpleAir dashboard.
 
-## Initialize Spatial Data {#sec-initialization}
+## Initialization {#sec-initialization}
 
 ::: callout-note
-All the tasks described in this section is accomplished automatically with the `new_pas()` function (@sec-read) . As a result, this section is entirely optional and is only included for reference.
+All the tasks described in this section is accomplished automatically with the `new_pas()` function (@sec-createPAS) . As a result, this section is entirely optional and is only included for reference.
 :::
 
-The PAS requires spatial data information to be initialized first before pulling in data from the PurpleAir API dashboard. **Spatial data** is any kind of data that directly or indirectly references a specific geographical area or location. Information about the country, timezones, county, and states will be needed before pulling in PurpleAir data. The `MazamaSpatialUtils` package can be used to download and save the necessary spatial data files needed to create a PAS object. More information about the package and the spatial data that is available for download can be found [here](https://cran.r-project.org/web/packages/MazamaSpatialUtils/vignettes/MazamaSpatialUtils.html). @MazamaSpatialUtils. Make sure the package is loaded using the `library()` function.
+The PAS requires spatial data information to be initialized first before pulling in data from the PurpleAir API dashboard. **Spatial data** is any kind of data that directly or indirectly references a specific geographical area or location. Information about the country, timezones, county, and states will be needed before pulling in PurpleAir data. The `MazamaSpatialUtils` package can be used to download and save the necessary spatial data files needed to create a PAS object. To create a new PAS object you must first properly initialize the `MazamaSpatialUtils` package by using the `initializeMazamaSpatialUtils()` function.
+
+The initialization process must be done **before** a new PAS object is created. This may require downloading spatial data sets onto your computer. See @sec-initialization for more details. More information about the package and the spatial data that is available for download can be found [here](https://cran.r-project.org/web/packages/MazamaSpatialUtils/vignettes/MazamaSpatialUtils.html). @MazamaSpatialUtils. Make sure the package is loaded using the `library()` function.
 
 By default, the `MazamaSpatialUtils` package comes with three built-in spatial data sets:
 
@@ -802,13 +875,9 @@ mypath
     The `initializeMazamaSpatialUtils()` function must be run **before** a new PAS data object is created. If you do not do this, an error message will result if you try to create one with the `pas_createNew()` function, asking you to initialize first.
     :::
 
-## Create New PAS Data Using API Key {#sec-createPAS}
+## Details on PAS/PAT Creation {#sec-PAS-PAT}
 
-::: callout-note
-All the tasks described in this section is accomplished automatically with the `new_pas()` function (@sec-read). As a result, this section is entirely optional and is only included for reference.
-:::
-
-To create a new PAS object you must first properly initialize the `MazamaSpatialUtils` package by using the `initializeMazamaSpatialUtils()` function. The initialization process must be done **before** a new PAS object is created. This may require downloading spatial data sets onto your computer. See @sec-initialization for more details. The `pas_createNew()` function performs the following tasks behind the scenes:
+The `pas_createNew()` function performs the following tasks behind the scenes:
 
 1.  Download a raw dataset of the entire PurpleAir network that includes both metadata and recent PM~2.5~ averages for each deployed sensor across the globe. See `downloadParseSynopticData()` for more info.
 
@@ -836,4 +905,27 @@ pas_live <- pas_createNew(countryCodes="US",
 
 ::: callout-note
 Creating a PAS object can take up to a minute to process.
+:::
+
+Once the PAS data frame has been loaded, we then create a PAT file by specifying the sensor and the dates from which to pull data from. Since this requires drawing data from the PurpleAir API dashboard, an API key (@sec-setAPI) is required to access this data to create the PAT object.
+
+The following example will create a brand new PAT object with up-to-the-minute data. Assuming a PAS object has been loaded (@sec-createPAS), we use it to create the PAT object with a specific `sensor_index`. Make sure you have set your API Key (@sec-setAPI) before running this code below.
+
+::: callout-important
+A PAS data frame is required to create a PAT data frame and you must have the appropriate number of points allocated to the API key in order for the PAT object to be created. If you do not have enough points on the API key, you will not be able to complete the operation.
+:::
+
+```{r pat}
+#| eval: false
+# Create new PAT object
+pat <- pat_createNew(pas=pas,
+    sensor_index="3515",    
+    startdate="2022-07-01",
+    enddate="2022-07-08",
+    timezone="UTC",
+    verbose=TRUE)
+```
+
+::: callout-note
+Creating a PAT object can take up to a minute to process.
 :::
