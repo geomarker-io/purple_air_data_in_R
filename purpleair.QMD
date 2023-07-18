@@ -1,5 +1,5 @@
 ---
-title: "PurpleAir Data Exploration"
+title: "PurpleAir Data Exploration Vignette"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
 date: "July 18, 2023"
@@ -16,138 +16,39 @@ number-sections: true
 number-depth: 3
 ---
 
-::: {.callout-note title="Before You Begin"}
-Download the following files from our GitHub page. To download these files, click on the file name at the top of the page and then click **Download raw file**.
-
--   `purpleair.R`
-
--   `new_pas.R`
-
--   `new_pat.R`
-
-![Click on **Download raw file** for each file posted on our GitHub page.](github_download.png){width="650"}
-
-Once the files have been downloaded onto your computer, save all these files in one new folder. Make a mental note of the location of this folder, since you will need to reference its file path later in this tutorial. After you install both R and RStudio, clicking on any of these `.R` files should open RStudio and set your current working directory to the folder these files are located. For more information about working directories, see @sec-saveload.
-:::
-
 # Introduction {#sec-intro}
 
 Air quality sensors have the potential to provide high spatial and temporal resolution data and their accessibility in terms of cost and ease of use [@collier-oxandale2022]. Open access to environmental data sets and related tools is possible through a stable and consistent Application Programming Interface (API) that allows software and application developers to build applications to display and report that data in transparent and meaningful ways [@feenstra2020].
 
-In this document, we will present methods of accessing synoptic and time series data using R software with the `AirSensor` package from the PurpleAir interface [@AirSensor]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
+In this document, we will present methods of accessing synoptic and time series data using R software with the `AirSensor` package from the PurpleAir API dashboard interface [@AirSensor]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
 
 ::: callout-note
-This rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available in this vignette is in the `purpleair.R` file that is also hosted on our GitHub page. As you follow along with this tutorial, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it. You will also need the `new_pas.R` file and the `new_pat.R` file on our GitHub page to create synoptic data and time series data.
+This rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available in this vignette is in the `purpleair.R` file that is also hosted on our GitHub page. As you follow along with this tutorial, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it.
 :::
 
-## Basic Introduction to R and RStudio {#sec-introR}
+## Setup {#sec-setup}
 
-::: callout-note
-If you already are familiar with both R and RStudio, you may skip these sections and proceed to @sec-synoptic .
-:::
+Throughout this tutorial, we assume that you already have R and RStudio installed on your computer and know the basics with how to use the R programming language. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system [@rcoreteam2013]. After installing R, you will then need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an integrated development environment (IDE) to help data scientists be more productive with R [@rstudioteam2020a].
 
-R is a free, open-source software program that is available for Windows, Macs and Linux operating systems [@rcoreteam2013]. Because of this, many statisticians, biostatisticans, and data scientists have been using R to meet their data processing needs. In this tutorial, we will introduce how to install R and RStudio on your computer, try out basic R function commands, and learn how to install and load R packages. This foundation is necessary before we begin to read and explore PurpleAir sensor data.
+This section describes how to set up your R session to prepare to work with the necessary packages, functions, and files that will be created, loaded and saved to your computer.
 
-### Installing R and RStudio {#sec-installR}
+### Downloading Files {#sec-download}
 
-The latest version of R available as of the time of this writing is R-4.3.1. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system. Download the `base` distribution of R from the website and follow the prompts to install R on your computer.
+Download the following files from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R/tree/main): To download these files, click on the file name at the top of the page and then click **Download raw file**.
 
-![The Comprehensive R Archive Network (CRAN) website for downloading R.](r_site.png)
+-   [`purpleair.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/purpleair.R)
 
-After installing R on your computer, you will also need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an integrated development environment (IDE) to help data scientists be more productive with R [@rstudioteam2020a]. RStudio is a dashboard hosted by [posit](https://posit.co/) that allows ease of access to using R, especially if you are using R for the first time. The posit website link should automatically direct you to the appropriate version of RStudio you will need to download and install on your computer. Once you have both R and RStudio installed, open up the RStudio software.
+-   [`new_pas.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/new_pas.R)
 
-![The posit site for downloading RStudio.](rstudio_site.png)
+-   [`new_pat.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/new_pat.R)
 
-### Opening and Using R {#sec-openR}
+![Click on **Download raw file** for each file posted on our GitHub page.](github_download.png){width="650"}
 
-Download the `purpleair.R` file from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R). Make note of the file location on your computer where you save the file. It is recommended that you save the R file in a different location than your **Downloads** folder.
+Once the files have been downloaded onto your computer, save all these files in one new folder. Remember the location of this folder, since you will need to reference its file path later in the next section. After you install both R and RStudio, clicking on any of these `.R` files should open RStudio and set your current working directory to the folder these files are located.
 
-![Our GitHub website where all files in the document are located.](github.png)
+### Set Working Directory {#sec-setwd}
 
-This kind of file is called an R script. You can identify R files with the file extension name `.R`. By default, RStudio should open a `.R` file if you click on it. If your computer does not recognize the `.R` file extension, you must tell your computer to open the file using RStudio. Optionally, you can also open an `.R` file within RStudio by following these steps:
-
-1.  Open RStudio.
-2.  Click on **File** \> **Open File**. A navigation window should appear.
-3.  Navigate to the file location where you saved the `purpleair.R` file.
-4.  Click **Open**.
-
-A typical layout within RStudio has four different quadrants. Starting from the top-left clockwise:
-
-![The default RStudio layout for a typical R session.](rstudio_layout.png)
-
-1.  **Source Pane:** This panel displays all the R scripts you have opened. Code should be written in this panel. You can save R code within the panel to work on later. Any `.R` files you open with RStudio will be displayed in this panel.
-2.  **Console Pane:** This panel displays the actual R console, including all the code and output that has been conducted so far.
-3.  **Environment Pane:** This panel houses several tabs. The **Environment** tab lists all the R objects and variables available during the R session. The **History** tab keeps track of all code that has been executed in the Console. More tabs may be displayed depending on the type of project you may be working on.
-4.  **Output Pane:** This panel includes a file viewer, plots that have been made, list of packages available and currently loaded, help documentation, a viewer, and a presentation tab.
-
-R code is executed one line at a time. To run a line, place your cursor on the line you wish to run in the Source Pane and click on **Run**. The line of code is then sent to the Console Pane and is executed. You can highlight multiple lines of code and run them all at once as well. Optionally, you can run lines of code by using the shortcut **CTRL + ENTER**. To get started, here is some simple lines of code:
-
-```{r example1}
-# Assign values
-x <- 2    # assign the letter 'x' the value 2
-y <- 9    # assign the letter 'y' the value 9
-```
-
-::: callout-tip
-If the first line of code begins with the special character symbol `#`, then that line is called a comment. Comments are useful to write down what certain lines of code perform. R will not execute lines of code that begin with `#`. Likewise, R will not execute any code following the `#` symbol. As a result, the `#` symbol can also be used to grey out lines of code that maybe do not work or you wish to not execute without having to delete the entire line of code. In RStudio, comments are easily identified because the lines of code are written in green.
-:::
-
-Highlight the first line of code in the Source Pane `x <- 2`. The special character `<-` assigns the value provided on the right (`2`) to an object on the left (`x`). Hence, this line will set the variable `x` with the value of 2. The next line of code will assign the value `9` to the variable `y`. You can see that these values have been declared by clicking on the **Environment** tab in the Environment Pane.
-
-With the variables `x` and `y` now declared, we can then use them to perform some simple operations:
-
-```{r}
-# Perform simple operations
-x + y     # equivalent to '2' + '9'
-sqrt(y)   # sqrt = square-root
-```
-
-::: callout-warning
-R is case sensitive and name sensitive so be very careful with how you name objects, files, options, and data frames within R. For example, even though `PM25`, `pm25`, `pm2.5`, and `PM2.5` all 'appear' the same, these are classified as 4 different names. For convenience, we try to stick to lowercase letters when coding in R to avoid these discrepancies.
-:::
-
-Since `x` and `y` have been declared, R then calculates `x + y` and `sqrt(y)`. These results change depending on what the values of `x` and `y` are. As an exercise, change the values of `x` and `y` and rerun these lines again. The `sqrt()` line is a **function** - functions perform more complicated tasks within R.
-
-::: callout-warning
-Make sure you declare both `x` and `y` variables first before running `x + y` and `sqrt(y)` or else R will report an **ERROR** message.
-:::
-
-This rendered HTML of all the code and relevant output is hosted online on our GitHub page, which you can access by clicking [here](https://geomarker.io/purple_air_data_in_R/). All the R code that is available on this site is in the `purpleair.R` file. As you follow along on the site, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it.
-
-::: callout-important
-Make sure you always include the `.R` file extension at the end of the filename when naming and saving R scripts. RStudio will **not** add this file extension on for you automatically. If you do not include the `.R` suffix, your computer may not recognize how to open the file.
-:::
-
-R can work with data set objects, called data frames. R has a built-in data frame called `mtcars`. You can learn more information about any function or built-in data set by opening the help window using the `help()` function:
-
-```{r help}
-#| eval: false
-# Display help documentation for 'mtcars'
-help(mtcars)
-```
-
-We display several first rows of this new R object with the `head()` function. By default, the first 6 rows are displayed. We can change this by declaring an **option** - additional arguments you can provide in an R function to modify its behavior. For example, the option `n=10` in the `head()` function changes the number of rows to display to 10:
-
-```{r example_print}
-# Display first n=10 rows of the example cars data 
-head(mtcars, n=10)
-```
-
-All options must be specified within a function. Each option is then followed by an `=` operator with the argument specified afterwards to pass onto the function. You will see more examples of using options later on.
-
-We can reference columns within a data frame by specifying the name of the data frame, using the `$` symbol, and then the name of the column within. The `$` operator is a special character in R. It references the column name within a data frame. In the example above, if we want to only examine miles per gallon of these cars, we can reference the name of this column `mpg` within `mtcars` as the following:
-
-```{r col_operator}
-# Reference the 'mpg' column within 'mtcars'
-mileage <- mtcars$mpg
-head(mileage, n=20)
-```
-
-### Saving/Loading Data {#sec-saveload}
-
-The first thing to do when starting a new R session is to set the **working directory -** a specific file path location on your computer. Whenever R fetches for a file on your computer, it will always check the working directory first. The default working directory may be different depending on how RStudio starts. You can verify the default working directory in RStudio by clicking on **Tools** \> **Global Options** and looking under the **Basic** tab in the **General** section. However, if you click on an R script on your computer, RStudio should start (by default) with the R script displayed in the Source Pane but the working directory will be the folder where the R script used to open RStudio is located. Because the working directory may change depending on how RStudio opens, it is always a good idea to set and verify the working directory before running any code.
-
-Checking your working directory also ensures that your files will be read and saved in the correct location. If you try to load in a file with the wrong working directly, R (probably) won't find the file it is looking for and will print an error message in the console saying no such file exists there. In addition, saving files without verifying the working directory may cause those files to save in an unexpected location on your computer.
+The first thing to do when starting a new R session is to set the **working directory -** a specific file path location on your computer. Whenever R fetches for a file on your computer, it will always check the working directory first. Because the working directory may change depending on how RStudio opens, it is always a good idea to set and verify the working directory before running any code. Checking your working directory also ensures that your files will be read and saved in the correct location. If you try to load in a file with the wrong working directly, R (probably) won't find the file it is looking for and will print an error message in the console saying no such file exists there. In addition, saving files without verifying the working directory may cause those files to save in an unexpected location on your computer.
 
 You can use the function `getwd()` to obtain the current working directory:
 
@@ -155,6 +56,10 @@ You can use the function `getwd()` to obtain the current working directory:
 # Check the current working directory
 getwd()
 ```
+
+::: callout-tip
+You can easily copy and paste code from this vignette into the `purpleair.R` script. Hover your mouse over the icon on the top-right of any R code block and click on it to copy to the clipboard. Inside the `purpleair.R` file, you can then paste the entire code block into your R script and run those lines from there.
+:::
 
 This should return a file path that should point to the root folder - the folder that contains the files `purpleair.R`, `new_pas.R`, and `new_pat.R`.
 
@@ -175,16 +80,16 @@ If the file path displayed by `getwd()` is incorrect, you will need to change th
 4.  R automatically sets the new working directory using the function `setwd()` in the Console Pane.
 
     ::: callout-tip
-    Feel free to copy this line of code from the Console Pane to the `purpleair.R` script. Make sure to remove the `>` symbol (the **command prompt**) at the beginning of the line when doing so. By copying in the `setwd()` statement into the R script, you can then set the working directory by simply running this line of code.
+    Feel free to copy this line of code from the Console Pane to the `purpleair.R` script. Make sure to remove the `>` symbol at the beginning of the line when doing so. By copying in the `setwd()` statement into the R script, you can then set the working directory by simply running this line of code.
     :::
 
 5.  Verify that you have set your working directory correctly using the `getwd()` function again.
 
 ::: callout-important
-Always start a brand new R session before changing the working directory. The working directory should always be set first before performing any tasks. For example, the `here` package (described next) sets the default file path to the current working directory, and only when the package is first loaded. Changing the working directory afterwards will not change the file path.
+Always start a brand new R session before changing the working directory. The working directory should always be set first before performing any tasks. For example, the `here` package (described next) sets the default file path to the current working directory, and only when the package is first loaded. Changing the working directory afterwards will not change the file path. To restart the R session, click on **Session** \> **Restart R**.
 :::
 
-The R package `here` can help navigate the locations of folders within a working directory. We will discuss more about R packages in the @sec-packages. First, install the package using the `install.packages()` function with the name of the package `here` in quotes, referred to as a **character string**:
+The R package `here` can help navigate the locations of folders within a working directory. First, install the package using the `install.packages()` function:
 
 ```{r install_here}
 #| eval: false
@@ -212,33 +117,15 @@ mypath
 This is the reason why it is so crucial to save all the files you download from our GitHub page into a new folder. If the files are spread out across multiple folders, R will not be able to find files or load in functions correctly. Always check the working directory of your R session first before performing any tasks or you may run into problems loading in files or saving files in the wrong location.
 :::
 
-Running this line saves the current working directory as a character string. This is convenient for referencing where the default file path location R checks for reading in files. Whenever we save data, we will use the file path `mypath` to ensure the data are saved as files in the correct file location on your computer. For example, suppose we wish to save `mtcars` in a file named `cardata.rds`. Here, the `.rds` file extension references a [**R**]{.underline} [**D**]{.underline}**ata [S]{.underline}erialization** file - a convenient way to save and read in data frame objects in R.
-
-```{r save_file}
-# Save data frame as a file
-saveRDS(mtcars, file = here(mypath, "cardata.rds"))
-```
-
-We can then use the same `mypath` to load in the file as well.
-
-```{r load_file}
-# Load data frame into the R session
-readRDS(file = here(mypath, "cardata.rds"))
-```
+Running this line saves the current working directory as a character string. This is convenient for referencing where the default file path location R checks for reading in files. Whenever we save data, we will use the file path `mypath` to ensure the data are saved as files in the correct file location on your computer.
 
 ::: callout-important
-The `mypath` references the file path where the `purpleair.R` file is saved on your computer. If you move the `purpleair.R` file to a different location, you should also move its associated files with it too, or else you will have to manually update the file paths of each associated file. To avoid complications with problems like this, it is always a good idea to keep only the `purpleair.R` and its associated files in a folder. Moving the folder with all its contents included makes the project self-contained since the `here` package will automatically update the file paths to the new folder location.
+The `mypath` references the file path where all the PurpleAir files are saved on your computer. If you move a file to a different location, you should also move their associated files too. Moving the folder with all its contents included makes the project self-contained since the `here` package will automatically update the file paths to the new folder location.
 :::
 
-R can work with a variety of data structures besides the `.rds` format. Common structures include `.csv`, `.txt`, and `.spss`. Excel spreadsheets can also be read in by using the `readxl` package. The easiest way to import a data file for the first time is using the **Important Dataset** feature in the **Environment** Tab in the Environment Pane. All code needed to read in data files for this vignette will be provided but you may have to alter the file path locally for the code to work properly on your computer.
+### R Packages {#sec-packages}
 
-### Packages {#sec-packages}
-
-R packages are extensions to the base R environment, allowing the user to import data, functions, code, documentation and objects other creators have compiled. These packages are hosted on a centralized software repository such as the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/).
-
-#### Installing R Packages {#sec-packages-install}
-
-Installing packages is easy and usually requires a one-time installation process. You will need to install the following packages in an R session in order to use the following code in this vignette:
+You will need to install the following packages in an R session in order to use the following code in this vignette:
 
 -   [`dplyr`](https://cran.r-project.org/web/packages/dplyr/dplyr.pdf): a fast, consistent tool for working with data [@dplyr].
 
@@ -273,13 +160,11 @@ Some packages may need to be loaded from binary sources and compiled before inst
 Select **Yes** to ensure the packages and their dependencies are downloaded and installed properly.
 :::
 
-Some R package depend on other R packages (called **dependencies**). Packages that depend on other packages will install these extra packages automatically if they are not already installed in the users library. You can view all the R packages installed on your computer by clicking on the **Packages** tab in RStudio on the Output Pane.
+Some R package depend on other R packages. Packages that depend on other packages will install these extra packages automatically if they are not already installed in the users library. You can view all the R packages installed on your computer by clicking on the **Packages** tab in RStudio on the Output Pane.
 
 ::: callout-tip
 R already comes with its own packages (e.g., datasets, graphics, etc.). You do not need to install these packages, as they are already preinstalled when R is first installed.
 :::
-
-Periodically, authors of R packages will update their package to fix bugs, add more functions and data sets, and to be better compatible with the latest R software and other packages. You can use the `install.packages()` function to update (actually re-install) the package to the latest version. By default, the latest version of the package available on CRAN will be installed.
 
 Unlike the other R packages above, the `AirSensor` package is not publicly available on CRAN (as of this writing). However, the files needed to install the package can be downloaded from [GitHub](https://github.com/MazamaScience/AirSensor). To do this, we use the `install_github()` function from the devtools package to point to the GitHub page:
 
@@ -293,15 +178,11 @@ When the above line is executed, a list of dependencies the `AirSensor` package 
 
 ![When prompted with a list of packages to update, type `1` and press **ENTER**.](AirSensor.png){width="500"}
 
-All the packages listed in the console will be downloaded and installed. After these packages have been installed, the `AirSensor` package will then be downloaded and installed.
-
 ::: callout-note
 It can take several minutes for all the packages to download and install on your computer. Do not run any code or stop the process by clicking on the stop sign icon in the top right of the Console Pane. Doing so can cause problems with the installation.
 :::
 
-#### Loading R Packages {#sec-packages-load}
-
-Once R packages have been installed, you must then load the R package in the R environment. Loading in R packages allows the user to gain access to data, functions, and help documentation that comes along with the R package. To load an R package, use the function `library()` along with the package name, just as we did with the `here` package in @sec-saveload :
+Once R packages have been installed, you must then load the R package in the R environment by using the function `library()` along with the package name, just as we did with the `here` package in @sec-setwd :
 
 ```{r load_packages}
 #| message: false
@@ -319,7 +200,7 @@ library(AirSensor)
 As shown in this example with the `here` package, a package only needs to be loaded in once per R session. Reloading a package will have no effect.
 :::
 
-You can check whether a package is successfully loaded by clicking on the **Packages** tab in the Output Pane. Loaded packages are indicated with a check mark. You can also load a package by selecting the open box next to the package name, browse package information on CRAN, and delete the package altogether from this list. Loaded packages can be unloaded by clicking on the check mark. Typically, however, packages are never unloaded, as functions that are part of a package will then become unavailable once the package is unloaded. All open packages are unloaded when R or RStudio is closed or a new R session begins.
+You can check whether a package is successfully loaded by clicking on the **Packages** tab in the Output Pane. Loaded packages are indicated with a check mark. You can also load a package by selecting the open box next to the package name, browse package information on CRAN, and delete the package altogether from this list. Loaded packages can be unloaded by clicking on the check mark. All open packages are unloaded when R or RStudio is closed or a new R session begins.
 
 ![List of Packages installed in the Output Pane. Loaded packages are indicated with a checkmark.](packages.png){width="450"}
 
@@ -327,22 +208,12 @@ You can check whether a package is successfully loaded by clicking on the **Pack
 Unlike the installation process where the packages are installed only once, you must load these packages every time you start a new R session. When you quit your R session and start a fresh session, you must reload the R packages again.
 :::
 
-Sometimes, R will print a warning message if a package that is loaded could conflict with another package that is already loaded. This scenario appears if, for example, functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default.
+::: callout-caution
+Sometimes, R will print a warning message if a package that is loaded could conflict with another package that is already loaded, like the one shown below:
 
 ![Function conflicts when loading the `dplyr` package.](conflict.png){width="450"}
 
-To use a masked function from an earlier package, you must either unload the latter package or reference specifically the package, as in the example below:
-
-```{r package_ref}
-# Pull example sensor data from the 'AirSensor' package
-sen <- AirSensor::example_sensor
-
-# Select only the data from the example sensor data
-sen.data <- sen$data # $ - references 'data' column
-```
-
-::: callout-tip
-The `AirSensor` package does NOT have to be loaded for this code to work. Indeed, the `AirSensor::example_sensor` pulls the example_sensor data from the `AirSensor` package without loading the entire package. This is useful if you want to avoid loading in multiple packages that you many only use sparingly.
+This scenario appears if, for example, functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default.
 :::
 
 # Synoptic (PAS) Data {#sec-synoptic}
@@ -444,7 +315,7 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
     ```
 
     ::: callout-caution
-    If you save your `API_KEY.R` file in a different file location on your computer than the R script that you are using to pull the API Key from, you must specify the full file path in quotes inside the `source()` function. You can use the `here` package to specify the file location where `API_KEY.R` is saved. If you save all the files in the same folder location, `mypath` should automatically contain the correct file path. See @sec-saveload for more details.
+    If you save your `API_KEY.R` file in a different file location on your computer than the R script that you are using to pull the API Key from, you must specify the full file path in quotes inside the `source()` function. You can use the `here` package to specify the file location where `API_KEY.R` is saved. If you save all the files in the same folder location, `mypath` should automatically contain the correct file path. See @sec-setwd for more details.
     :::
 
 5.  If done correctly, your current R session should fetch for the appropriate R file, read it, and then save your API Key as the variable name (in this case, `PurpleAir_API`) you specified in step 2. This is a great way to save and read in your API Key without having to actually specify it. This also allows you to avoid giving out your unique API Key in the R script you are working on, protecting yourself from others that could access to the PurpleAir dashboard using your API Key.
@@ -481,7 +352,7 @@ PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80
 
 The PAS object that will be pulled from PurpleAir is a large data frame with a record for each PurpleAir sensor channel (2 channels per sensor). There are several steps that must be accomplished before the PurpleAir dashboard can be utilized to bring in sensor data. Details of these processes can be found in the Appendix (@sec-appendix).
 
-The R script `new_pas.R` contains a function `new_pas()` that performs these background processes automatically. To load in the function, you must source the function from the `new_pas.R`, assuming it has been saved to same working directory as the `purpleair.R` script called `mypath` (@sec-saveload ).
+The R script `new_pas.R` contains a function `new_pas()` that performs these background processes automatically. To load in the function, you must source the function from the `new_pas.R`, assuming it has been saved to same working directory as the `purpleair.R` script called `mypath` (@sec-setwd ).
 
 ```{r load_new_pas}
 # Load in the new_pas() function from file
@@ -558,24 +429,38 @@ When this code is run, the following steps are performed in this order:
 
 ### Create a New PAS from Archived Data {#sec-archive}
 
-It is possible to load pre-generated PAS objects from a data archive specified by a URL in the `setArchiveBaseUrl()` function. Specify the name of the URL in quotes, as in the example below.
+Archived PAS objects can be loaded very quickly with the `pas_load()` function, which obtains PAS objects from the URL archive specified with `setArchvieBaseUrl()`. It is possible to load pre-generated PAS objects from a data archive specified by a URL in the `setArchiveBaseUrl()` function.
 
-```{r setArchiveBaseUrl}
-# Set location of pre-generated data files
-setArchiveBaseUrl("https://airfire-data-exports.s3-us-west-2.amazonaws.com/PurpleAir/v1")
+```{r setArchiveBaseUrl_1}
+# Set URL location of pre-generated data files
+setArchiveBaseUrl("https://airsensor.aqmd.gov/PurpleAir/v1/")
 ```
 
-Archived PAS objects can be loaded very quickly with the `pas_load()` function, which obtains PAS objects from the URL archive specified with `setArchvieBaseUrl()`. When used without specifying the `datestamp` argument, `pas_load()` will obtain the most recently processed PAS object. But you can also use the `datestamp` argument inside `pas_load()` to load an archived PAS object from a specified date.
+When used without specifying the `datestamp` argument, `pas_load()` will obtain the most recently processed PAS object. But you can also use the `datestamp` argument inside `pas_load()` to load an archived PAS object from a specified date. The [URL above](https://airsensor.aqmd.gov/PurpleAir/v1/) contains archived PAS files from April 5, 2019 through May 27, 2022.
 
-The following example loads a pre-generated PAS object from April 10, 2020 from the above archive base URL:
+The following example loads a pre-generated PAS object from April 10, 2022 from the above archive base URL:
 
 ```{r pas_archive}
 # Load a PAS object from a specific date
-pas_apr10 <- pas_load(datestamp="20200410")   # '20200410' = '4-10-2020'
+pas_apr10 <- pas_load(datestamp="20220410")   # '20200410' = '4-10-2020'
 ```
 
-::: callout-note
-In the next section, we will explore an example PAS from the `AirSensor` package. The `purpleair.R` file contains code that has been adapted from the example to this archived PAS from April 10, 2020. This additional code is not displayed in this vignette for space reasons but they accomplish the same tasks, just using a different PAS file.
+You can specify a different URL to pull in archived PAS data. Here are two additional URL sources you can try pulling historic PurpleAir data from:
+
+```{r setArchiveBaseUrl_2}
+#| eval: false
+# Different source to pull PurpleAir PAS files
+setArchiveBaseUrl("https://airfire-data-exports.s3-us-west-2.amazonaws.com/PurpleAir/v1")
+```
+
+```{r setArchiveBaseUrl_3}
+#| eval: false
+# Another source that hosts PurpleAir PAS files
+setArchiveBaseUrl("http://data.mazamascience.com/PurpleAir/v1/")
+```
+
+::: callout-caution
+The variable names of the PAS file you use may change depending on where you source your data from. Make sure you adapt the variable names such as `locationID` and `pm2.5_` exactly (case-sensitive, spelling, punctuation) so they match exactly as they are specified in your PAS data frame.
 :::
 
 ## Exploring Spatial Data {#sec-PAS-explore}
@@ -620,7 +505,7 @@ At a glance, the PAS has several useful columns of data we can explore. There ar
 We can pull only those columns that begin with this prefix and store them as a new R object. Each row corresponds to one sensor so it is also a good idea to include the `locationID` of each sensor with our new `pm25` object. The code below takes the pas R object and then uses the `select()` function to choose `locationID` that starts with `pm2.5_` as the variable name (notice the use of quotes here!). The `%>%` operator is called a pipeline operator that is available in the `dplyr` package (and others) which can accomplish this process in one execution.
 
 ::: callout-caution
-The variable names of your PAS object may differ slightly from the examples provided here. Make sure you adapt the variable names such as `locationID` and `pm2.5_` exactly (case-sensitive, spelling, punctuation) so they match as specified in your PAS object.
+The variable names of the PAS file you use may change depending on where you source your data from. Make sure you adapt the variable names such as `locationID` and `pm2.5_` exactly (case-sensitive, spelling, punctuation) so they match exactly as they are specified in your PAS data frame.
 :::
 
 ```{r pm25}
@@ -692,7 +577,7 @@ PurpleAir sensor readings are uploaded to the cloud every 120 seconds where they
 
 In order to access the ThingSpeak channel API we must first load the synoptic database object (PAS), which was discussed in @sec-createPAS. Once the PAS data frame has been loaded, we then create a **PurpleAir Time Series (PAT)** object by specifying the sensor and the dates from which to pull data from. Since this requires drawing data from the PurpleAir API dashboard, an API key (@sec-setAPI) is required to access this data to create the PAT object.
 
-Just like the `new_pas.R` script in @sec-createPAS, the R script `new_pat.R` contains a function `new_pat()` that performs the process of creating a PAT data frame automatically. To load in the function, you must source the function from the `new_pat.R`, assuming it has been saved to same working directory as the `purpleair.R` script (@sec-saveload ).
+Just like the `new_pas.R` script in @sec-createPAS, the R script `new_pat.R` contains a function `new_pat()` that performs the process of creating a PAT data frame automatically. To load in the function, you must source the function from the `new_pat.R`, assuming it has been saved to same working directory as the `purpleair.R` script (@sec-setwd ).
 
 ```{r load_new_pat}
 # Load in the new_pat() function from file
@@ -773,7 +658,7 @@ When this code is run, the following steps are performed in this order:
 4.  The function next checks that the required PAS file exists. If the file does not exist, the user is asked to run `new_pas()` function to create one first.
 
     ::: callout-tip
-    If you used `new_pas()` in @sec-createPAS, then the PAS file should already exist and the new_pat() function should automatically read it in for you.
+    If you used `new_pas()` in @sec-createPAS, then the PAS file should already exist and the `new_pat()` function should automatically read it in for you.
     :::
 
 5.  The function then proceeds to the PurpleAir dashboard and retrieves all the data from the sensor from the cloud between the `start_date` and `end_date` using the API Key and the PAS file. Points allocated with the PurpleAir API Key are then deducted. The data is then combined with the spatial data files to create the PAS object.
@@ -929,7 +814,7 @@ By default, the `MazamaSpatialUtils` package comes with three built-in spatial d
 `SimpleCountries` and `SimpleTimeZones` will be used when creating the PAS object. In addition to these two spatial data sets, we will also need spatial data regarding state codes and U.S. counties. These are not included in the `MazamaSpatialUtils` package. You must download the spatial data sets into a folder and then reference them later during the initialization process.
 
 ::: callout-warning
-Ensure that you have the working directory set before completing these steps. In these instructions, the spatial data sets will be saved in the file path of the working directory set by `mypath` (see @sec-saveload for setting and checking your file path), where `mypath` is the character string of your current working directory. You can verify that your working directory is set by running the `here()` function:
+Ensure that you have the working directory set before completing these steps. In these instructions, the spatial data sets will be saved in the file path of the working directory set by `mypath` (see @sec-setwd for setting and checking your file path), where `mypath` is the character string of your current working directory. You can verify that your working directory is set by running the `here()` function:
 
 ```{r check_wd}
 # Check the working directory first
@@ -949,7 +834,7 @@ mypath
     This will create a new folder called `pas_data` inside your current working directory where the downloaded files will be saved to.
 
     ::: callout-caution
-    Be careful how you set your file path location. R will check to make sure `mypath` is a valid file path (and it exists!) during this step. See section @sec-saveload if you are having trouble defining a valid file path.
+    Be careful how you set your file path location. R will check to make sure `mypath` is a valid file path (and it exists!) during this step. See section @sec-setwd if you are having trouble defining a valid file path.
     :::
 
 2.  Download the state code boundaries spatial data set `NaturalEarthAdm1.rda`:
