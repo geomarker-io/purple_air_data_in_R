@@ -30,10 +30,6 @@ new_pat <- function(pat_filename, folder_location,
     
     # If 'Y' use points to create and save a new PAT from PurpleAir
     if(pas.option=="Y"){
-      # Check if the API Key is set
-      if(!is.null(getAPIKey()$`PurpleAir-read`)){
-        message("PurpleAir API Key has already been set.")
-      } else{
         
         # Set the API Key from the API_KEY.R file
         message("Setting PurpleAir API Key.")
@@ -46,7 +42,6 @@ new_pat <- function(pat_filename, folder_location,
         } else{
           message("Error: API Key was not set. Make sure API_KEY.R is properly set up.")
         }
-      }
       
       # Check if a required PAS object does not exist
       if(!file.exists(here(folder_location, pas_filename))){
