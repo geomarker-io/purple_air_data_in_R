@@ -30,11 +30,13 @@ Click [here](https://geomarker.io/purple_air_data_in_R/) to access the vignette,
 It is highly recommended that you follow along with the HTML vignette by setting up and running the R code provided on your computer to get the most out of this tutorial. For your convenience, we have taken the R code listed in the HTML document and saved it in an R script `purpleair.R`. You can file this file listed at the top of the GitHub page.
 
 Download the following files from our GitHub page:
--   `purpleair.R`
--   `new_pas.R`
--   `new_pat.R`
+-   [`purpleair.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/purpleair.R)
 
-To download a file, click on the file name at the top of this page. This will then open the file within GitHub. In the top-right corner, click on the icon that says **Download raw file**. Make sure that you download the raw `.R` files and not the HTML versions. Use the left-side panel to then open the next file to download. Repeat this process until all the files are downloaded.
+-   [`new_pas.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/new_pas.R)
+
+-   [`new_pat.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/new_pat.R)
+
+To download a file, click on the file name to preview the file within GitHub. In the top-right corner of the preview page, click on the icon that says **Download raw file**. Make sure that you download the raw `.R` files and not the HTML versions. Use the left-side panel to then open the next file to download. Repeat this process until all the files are downloaded.
 
 
 Save all the files into one (preferrably new) folder. Remember the location of this folder, since you will need to reference its file path later in the tutorial. After you install both R and RStudio, clicking on any of these `.R` files should open RStudio and set your current working directory to the folder where these files are located. Make sure that the current working directory points to the folder containing these `.R` files. You can use the R package `here` to set up the correct working directory so that files are loaded and saved in the correct location on your computer. See the vignette for additional details.
