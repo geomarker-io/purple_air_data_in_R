@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 14, 2023"
+date: "July 17, 2023"
 format:
   html:
     output-file: "index.html"
@@ -15,6 +15,20 @@ bibliography: purpleair.bib
 number-sections: true
 number-depth: 3
 ---
+
+::: {.callout-note title="Before You Begin"}
+Download the following files from our GitHub page. To download these files, click on the file name at the top of the page and then click **Download raw file**.
+
+-   `purpleair.R`
+
+-   `new_pas.R`
+
+-   `new_pat.R`
+
+![Click on **Download raw file** for each file posted on our GitHub page.](github_download.png){width="650"}
+
+Once the files have been downloaded onto your computer, save all these files in one new folder. Make a mental note of the location of this folder, since you will need to reference its file path later in this tutorial. After you install both R and RStudio, clicking on any of these `.R` files should open RStudio and set your current working directory to the folder these files are located. For more information about working directories, see @sec-saveload.
+:::
 
 # Introduction {#sec-intro}
 
@@ -29,7 +43,7 @@ This rendered HTML of all the code and relevant output is hosted online on our G
 ## Basic Introduction to R and RStudio {#sec-introR}
 
 ::: callout-note
-If you already are familiar with both R and RStudio, you may skip this section.
+If you already are familiar with both R and RStudio, you may skip these sections and proceed to @sec-synoptic .
 :::
 
 R is a free, open-source software program that is available for Windows, Macs and Linux operating systems [@rcoreteam2013]. Because of this, many statisticians, biostatisticans, and data scientists have been using R to meet their data processing needs. In this tutorial, we will introduce how to install R and RStudio on your computer, try out basic R function commands, and learn how to install and load R packages. This foundation is necessary before we begin to read and explore PurpleAir sensor data.
@@ -61,7 +75,7 @@ A typical layout within RStudio has four different quadrants. Starting from the 
 
 ![The default RStudio layout for a typical R session.](rstudio_layout.png)
 
-1.  **Source Pane:** This panel displays all the R scripts you have opened. Code should be written in this panel. You can save R code within the panel to work on later. Any .R files you open with RStudio will be displayed in this panel.
+1.  **Source Pane:** This panel displays all the R scripts you have opened. Code should be written in this panel. You can save R code within the panel to work on later. Any `.R` files you open with RStudio will be displayed in this panel.
 2.  **Console Pane:** This panel displays the actual R console, including all the code and output that has been conducted so far.
 3.  **Environment Pane:** This panel houses several tabs. The **Environment** tab lists all the R objects and variables available during the R session. The **History** tab keeps track of all code that has been executed in the Console. More tabs may be displayed depending on the type of project you may be working on.
 4.  **Output Pane:** This panel includes a file viewer, plots that have been made, list of packages available and currently loaded, help documentation, a viewer, and a presentation tab.
@@ -92,7 +106,7 @@ sqrt(y)   # sqrt = square-root
 R is case sensitive and name sensitive so be very careful with how you name objects, files, options, and data frames within R. For example, even though `PM25`, `pm25`, `pm2.5`, and `PM2.5` all 'appear' the same, these are classified as 4 different names. For convenience, we try to stick to lowercase letters when coding in R to avoid these discrepancies.
 :::
 
-Since `x` and `y` have been declared, R then calculates `x + y` and `sqrt(y)`. These results change depending on what the values of `x` and `y` are. As an exercise, change the values of `x` and `y` and rerun these lines again.
+Since `x` and `y` have been declared, R then calculates `x + y` and `sqrt(y)`. These results change depending on what the values of `x` and `y` are. As an exercise, change the values of `x` and `y` and rerun these lines again. The `sqrt()` line is a **function** - functions perform more complicated tasks within R.
 
 ::: callout-warning
 Make sure you declare both `x` and `y` variables first before running `x + y` and `sqrt(y)` or else R will report an **ERROR** message.
@@ -103,6 +117,83 @@ This rendered HTML of all the code and relevant output is hosted online on our G
 ::: callout-important
 Make sure you always include the `.R` file extension at the end of the filename when naming and saving R scripts. RStudio will **not** add this file extension on for you automatically. If you do not include the `.R` suffix, your computer may not recognize how to open the file.
 :::
+
+R can work with data set objects, called data frames. R has a built-in data frame called `mtcars`. You can learn more information about any function or built-in data set by opening the help window using the `help()` function:
+
+```{r help}
+#| eval: false
+# Display help documentation for 'mtcars'
+help(mtcars)
+```
+
+We display several first rows of this new R object with the `head()` function. By default, the first 6 rows are displayed. We can change this by declaring an **option** - additional arguments you can provide in an R function to modify its behavior. For example, the option `n=10` in the `head()` function changes the number of rows to display to 10:
+
+```{r example_print}
+# Display first n=10 rows of the example cars data 
+head(mtcars, n=10)
+```
+
+All options must be specified within a function. Each option is then followed by an `=` operator with the argument specified afterwards to pass onto the function. You will see more examples of using options later on.
+
+We can reference columns within a data frame by specifying the name of the data frame, using the `$` symbol, and then the name of the column within. The `$` operator is a special character in R. It references the column name within a data frame. In the example above, if we want to only examine miles per gallon of these cars, we can reference the name of this column `mpg` within `mtcars` as the following:
+
+```{r col_operator}
+# Reference the 'mpg' column within 'mtcars'
+mileage <- mtcars$mpg
+head(mileage, n=20)
+```
+
+### Saving/Loading Data {#sec-saveload}
+
+The first thing to do when starting a new R session is to set the **working directory -** a specific file path location on your computer. Whenever R fetches for a file on your computer, it will always check the working directory first. The default working directory may be different depending on how RStudio starts. You can verify the default working directory in RStudio by clicking on **Tools** \> **Global Options** and looking under the **Basic** tab in the **General** section. However, if you click on an R script on your computer, RStudio should start (by default) with the R script displayed in the Source Pane but the working directory will be the folder where the R script used to open RStudio is located. Because the working directory may change depending on how RStudio opens, it is always a good idea to set and verify the working directory before running any code.
+
+The R package `here` can identify the current working directory of your R session based on where you saved the `purpleair.R` file. We will discuss more about R packages in the next section @sec-packages.First install the package using the `install.packages()` function with the name of the package `here` in quotes, referred to as a **character string**:
+
+```{r install_here}
+#| eval: false
+# Install the 'here' package - only run this once
+install.packages("here")
+```
+
+Then load the package using the `library()` function:
+
+```{r here}
+#| eval: true
+# Load the 'here' package
+library(here)
+```
+
+Since different operating systems have different conventions for writing out their file paths, the `here()` function makes it easy to reference your current working directory on your computer:
+
+```{r mypath}
+# Save the file path location
+mypath <- here()
+mypath
+```
+
+::: callout-imporant
+This is the reason why it is so crucial to save all the files you download from our GitHub page into a new folder. If the files are spread out across multiple folders, R will not be able to find files or load in functions correctly. Always check the working directory of your R session first before performing any tasks or you may run into problems loading in files or saving files in the wrong location.
+:::
+
+Running this line saves the current working directory as a character string. This is convenient for referencing where the default file path location R checks for reading in files. Whenever we save data, we will use the file path `mypath` to ensure the data are saved as files in the correct file location on your computer. For example, suppose we wish to save `mtcars` in a file named `cardata.rds`. Here, the `.rds` file extension references a [**R**]{.underline} [**D**]{.underline}**ata [S]{.underline}erialization** file - a convenient way to save and read in data frame objects in R.
+
+```{r save_file}
+# Save data frame as a file
+saveRDS(mtcars, file = here(mypath, "cardata.rds"))
+```
+
+We can then use the same `mypath` to load in the file as well.
+
+```{r load_file}
+# Load data frame into the R session
+readRDS(file = here(mypath, "cardata.rds"))
+```
+
+::: callout-important
+The `mypath` references the file path where the `purpleair.R` file is saved on your computer. If you move the `purpleair.R` file to a different location, you should also move its associated files with it too, or else you will have to manually update the file paths of each associated file. To avoid complications with problems like this, it is always a good idea to keep only the `purpleair.R` and its associated files in a folder. Moving the folder with all its contents included makes the project self-contained since the `here` package will automatically update the file paths to the new folder location.
+:::
+
+R can work with a variety of data structures besides the `.rds` format. Common structures include `.csv`, `.txt`, and `.spss`. Excel spreadsheets can also be read in by using the `readxl` package. The easiest way to import a data file for the first time is using the **Important Dataset** feature in the **Environment** Tab in the Environment Pane. All code needed to read in data files for this vignette will be provided but you may have to alter the file path locally for the code to work properly on your computer.
 
 ### Packages {#sec-packages}
 
@@ -124,33 +215,56 @@ Installing packages is easy and usually requires a one-time installation process
 
 -   [`AirSensor`](https://github.com/MazamaScience/AirSensor): package for processing and displaying data from PurpleAir [@AirSensor].
 
-To install these R packages, simply run the following code below.
-
-::: callout-note
-You may need to restart the R session in order for these packages to successfully install. If this is the case, select **Yes** when prompted to restart the R session. You may have to rerun the R code chunks again after restarting the session.
-:::
+To install the `dplyr`, `ggplot2`, `here`, `devtools`, `MazamaCoreUtils` and `MazamaSpatialUtils` packages, simply use the `install.packages()` function below.
 
 ```{r install_packages}
 #| eval: false
-# This only needs to be run once to install
-install.packages('dplyr', 'ggplot2',
-                 'MazamaCoreUtils', 'MazamaSpatialUtils')
-
-# Install the 'AirSensor' package
-devtools::install_github("MazamaScience/AirSensor")
+# Only run once to install (select YES to load binary packages)
+install.packages(c('dplyr', 'ggplot2', 'devtools',
+                   'MazamaCoreUtils', 'MazamaSpatialUtils'))
 ```
 
-Some R package depend on other R packages (called **dependencies**). For example, compiling this Quarto document requires the knitr package for the rending to work. Packages that depend on other packages will install these extra packages automatically if they are not already installed in the users library. You can view all the R packages installed on your computer by clicking on the **Packages** tab in RStudio on the File Manager panel (bottom-right quadrant by default).
+::: callout-caution
+You may need to restart the R session in order for these packages to successfully install. If this is the case, select **Yes** when prompted to restart the R session. You may have to rerun the R code chunks again after restarting the session.
+:::
+
+::: callout-note
+Some packages may need to be loaded from binary sources and compiled before installing. If this happens, a dialogue box will appear, like the one shown below.
+
+![Answer "Yes" to install packages that need compiling.](Question.png){width="350"}
+
+Select **Yes** to ensure the packages and their dependencies are downloaded and installed properly.
+:::
+
+Some R package depend on other R packages (called **dependencies**). Packages that depend on other packages will install these extra packages automatically if they are not already installed in the users library. You can view all the R packages installed on your computer by clicking on the **Packages** tab in RStudio on the Output Pane.
 
 ::: callout-tip
 R already comes with its own packages (e.g., datasets, graphics, etc.). You do not need to install these packages, as they are already preinstalled when R is first installed.
 :::
 
-Periodically, authors of R packages will update their package to fix bugs, add more functions and data sets, and to be better compatible with the latest R software and other packages. You can use the `install.packages()` function to update (read re-install) the package to the latest version. By default, the latest version of the package available on CRAN will be installed.
+Periodically, authors of R packages will update their package to fix bugs, add more functions and data sets, and to be better compatible with the latest R software and other packages. You can use the `install.packages()` function to update (actually re-install) the package to the latest version. By default, the latest version of the package available on CRAN will be installed.
+
+Unlike the other R packages above, the `AirSensor` package is not publicly available on CRAN (as of this writing). However, the files needed to install the package can be downloaded from [GitHub](https://github.com/MazamaScience/AirSensor). To do this, we use the `install_github()` function from the devtools package to point to the GitHub page:
+
+```{r install_AirSensor}
+#| eval: false
+# Install the 'AirSensor' package - only need to run once
+devtools::install_github("MazamaScience/AirSensor")
+```
+
+When the above line is executed, a list of dependencies the `AirSensor` package needs will be listed, and you will be asked to updated some or all of the packages. At the prompt, type `1` and press **ENTER** to update all the dependencies automatically.
+
+![When prompted with a list of packages to update, type `1` and press **ENTER**.](AirSensor.png){width="500"}
+
+All the packages listed in the console will be downloaded and installed. After these packages have been installed, the `AirSensor` package will then be downloaded and installed.
+
+::: callout-note
+It can take several minutes for all the packages to download and install on your computer. Do not run any code or stop the process by clicking on the stop sign icon in the top right of the Console Pane. Doing so can cause problems with the installation.
+:::
 
 #### Loading R Packages {#sec-packages-load}
 
-Once R packages have been installed, you must then load the R package in the R environment. Loading in R packages allows the user to gain access to data, functions, and help documentation that comes along with the R package. To load an R package, use the function `library()` along with the package name.
+Once R packages have been installed, you must then load the R package in the R environment. Loading in R packages allows the user to gain access to data, functions, and help documentation that comes along with the R package. To load an R package, use the function `library()` along with the package name, just as we did with the `here` package in @sec-saveload :
 
 ```{r load_packages}
 #| message: false
@@ -164,7 +278,11 @@ library(MazamaSpatialUtils)
 library(AirSensor)
 ```
 
-You can check whether a package is successfully loaded by clicking on the **Packages** tab in the File Manager quadrant. Loaded packages are indicated with a check mark. You can also load a package by selecting the open box next to the package name. Loaded packages can be unloaded by clicking on the check mark. Typically, however, packages are never unloaded, as functions that are part of a package will then become unavailable once the package is unloaded. All open packages are unloaded when R or RStudio is closed or a new R session begins.
+::: callout-tip
+As shown in this example with the `here` package, a package only needs to be loaded in once per R session. Reloading a package will have no effect.
+:::
+
+You can check whether a package is successfully loaded by clicking on the **Packages** tab in the Output Pane. Loaded packages are indicated with a check mark. You can also load a package by selecting the open box next to the package name, browse package information on CRAN, and delete the package altogether from this list. Loaded packages can be unloaded by clicking on the check mark. Typically, however, packages are never unloaded, as functions that are part of a package will then become unavailable once the package is unloaded. All open packages are unloaded when R or RStudio is closed or a new R session begins.
 
 ![List of Packages installed in the Output Pane. Loaded packages are indicated with a checkmark.](packages.png){width="450"}
 
@@ -190,53 +308,6 @@ sen.data <- sen$data # $ - references 'data' column
 The `AirSensor` package does NOT have to be loaded for this code to work. Indeed, the `AirSensor::example_sensor` pulls the example_sensor data from the `AirSensor` package without loading the entire package. This is useful if you want to avoid loading in multiple packages that you many only use sparingly.
 :::
 
-The above R code chunk pulls the example_sensor data from the `AirSensor` without loading the package. The `$` operator is a special character in R. It references the column name within a data frame. In the example above, we want only the `data` column of the `example_sensor` data. We save only the sensor data in a data frame called sen.data. We can then display several first rows of this new R object with the `head()` function. By default, the first 6 rows are displayed. We can change this by declaring an **option** - additional arguments you can provide in an R function to modify its behavior. For example, the option `n=10` in the `head()` function changes the number of rows to display to 10:
-
-```{r example_print}
-# Display first n=10 rows of the example sensor data 
-head(sen.data, n=10)
-```
-
-All options must be specified within a function. Each option is then followed by an `=` operator with the argument specified afterwards to pass onto the function. You will see more examples of using options later on.
-
-### Saving/Loading Data {#sec-saveload}
-
-The first thing to do when starting a new R session is to set the **working directory -** a specific file path location on your computer. Whenever R fetches for a file on your computer, it will always check the working directory first. The default working directory may be different depending on how RStudio starts. You can verify the default working directory in RStudio by clicking on **Tools** \> **Global Options** and looking under the **Basic** tab in the **General** section. However, if you click on an R script on your computer, RStudio should start (by default) with the R script displayed in the Source Pane but the working directory will be the folder where the R script used to open RStudio is located. Because the working directory may change depending on how RStudio opens, it is always a good idea to set and verify the working directory before running any code.
-
-You can check the root of the folder the `purpleair.R` file is located by running the `i_am()` function from the `here` package:
-
-```{r i_am}
-#| eval: false
-# Location of current root directory
-here::i_am("purpleair.R")
-```
-
-The R package `here` can identify the current working directory of your R session based on where you saved the `purpleair.R` file. Since different operating systems have different conventions for writing out their file paths, the `here()` function makes it easy to reference your current working directory on your computer:
-
-```{r here}
-# Save the file path location
-mypath <- here()
-mypath
-```
-
-Running this line saves the current working directory as a character string. This is convenient for referencing where the default file path location R checks for reading in files. Whenever we save data, we will use the file path `mypath` to ensure the data are saved as files in the correct file location on your computer. For example, suppose we wish to save some example data `mtcars` in a file named `cardata.rds`. Here, the `.rds` file extension references a [**R**]{.underline} [**D**]{.underline}**ata [S]{.underline}erialization** file - a convenient way to save and read in data frame objects in R.
-
-```{r save_file}
-# Save data frame as a file
-saveRDS(mtcars, file = here(mypath, "cardata.rds"))
-```
-
-We can then use the same `mypath` to load in the file as well.
-
-```{r load_file}
-# Load data frame into the R session
-readRDS(file = here(mypath, "cardata.rds"))
-```
-
-::: callout-important
-The `mypath` references the file path where the `purpleair.R` file is saved on your computer. If you move the `purpleair.R` file to a different location, you should also move its associated files with it too, or else you will have to manually update the file paths of each associated file. To avoid complications with problems like this, it is always a good idea to keep only the `purpleair.R` and its associated files in a folder. Moving the folder with all its contents included makes the project self-contained since the `here` package will automatically update the file paths to the new folder location.
-:::
-
 # Synoptic (PAS) Data {#sec-synoptic}
 
 **Synoptic data** provides a synopsis - a comprehensive view of something at a moment in time. Synoptic data takes a snapshot of data from all the PurpleAir sensors at a moment in time and uploads them to the cloud. **Spatial data** utilizes synoptic data to visualize data in different spacial locations (such as across the United States) at a given moment. Spatial data from PurpleAir sensors are stored on the cloud as **PurpleAir Synoptic (PAS)** data.
@@ -249,7 +320,7 @@ There are two various was to obtaining PurpleAir Synoptic (PAS) data to use with
 
 ### Create a New PAS from PurpleAir Dashboard {#sec-live}
 
-The [**PurpleAir API dashboard**](https://community.purpleair.com/t/new-api-dashboard/3981) allows users to create and manage their API keys and their usage. The site is available at [develop.purpleair.com](https://develop.purpleair.com/home). The dashboard requires a Gmail or Google-associated account to sign in. The instructions below follow the [tutorial](https://community.purpleair.com/t/new-api-online-dashboard/3981) provided by PurpleAir.
+The [**PurpleAir API dashboard**](https://community.purpleair.com/t/new-api-dashboard/3981) allows users to create and manage their API keys and their usage. The site is available at [develop.purpleair.com](https://develop.purpleair.com/home). The dashboard requires a [Gmail](https://support.google.com/mail/answer/56256?hl=en) or [Google-associated](https://support.google.com/accounts/answer/27441?hl=en) account to sign in. The instructions below follow the [tutorial](https://community.purpleair.com/t/new-api-online-dashboard/3981) provided by PurpleAir.
 
 #### Create a Project {#sec-createProject}
 
@@ -327,16 +398,16 @@ In this example, suppose that the API Key for a given project is `a1b2c3d4e5f6g7
     Make sure you supply the `.R` file extension at the end of the file name when naming and saving the file. RStudio will **not** add this file extension on for you when you go to save the file. If you do not include the `.R` suffix, your computer may not recognize how to open the file.
     :::
 
-4.  In the R script that you want to read in the API Key, use the `source()` function and then reference the R file (in this case, `API_KEY.R`) that you saved in the previous step.
+4.  In the R script that you want to read in the API Key, use the `source()` function and then reference the R file (in this case, `API_KEY.R`) along with the file path `mypath` of your current working directory.
 
     ```{r set_API}
     #| eval: false
     # Read 'API_KEY.R' file containing the API Key
-    source("API_KEY.R")
+    source(mypath("API_KEY.R"))
     ```
 
     ::: callout-caution
-    If you save your `API_KEY.R` file in a different file location on your computer than the R script that you are using to pull the API Key from, you must specify the full file path in quotes inside the `source()` function. You can use the `here` package to specify the file location where `API_KEY.R` is saved. See @sec-saveload for more details.
+    If you save your `API_KEY.R` file in a different file location on your computer than the R script that you are using to pull the API Key from, you must specify the full file path in quotes inside the `source()` function. You can use the `here` package to specify the file location where `API_KEY.R` is saved. If you save all the files in the same folder location, `mypath` should automatically contain the correct file path. See @sec-saveload for more details.
     :::
 
 5.  If done correctly, your current R session should fetch for the appropriate R file, read it, and then save your API Key as the variable name (in this case, `PurpleAir_API`) you specified in step 2. This is a great way to save and read in your API Key without having to actually specify it. This also allows you to avoid giving out your unique API Key in the R script you are working on, protecting yourself from others that could access to the PurpleAir dashboard using your API Key.
@@ -373,11 +444,11 @@ PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80
 
 The PAS object that will be pulled from PurpleAir is a large data frame with a record for each PurpleAir sensor channel (2 channels per sensor). There are several steps that must be accomplished before the PurpleAir dashboard can be utilized to bring in sensor data. Details of these processes can be found in the Appendix (@sec-appendix).
 
-The R script `new_pas.R` contains a function `new_pas()` that performs these background processes automatically. To load in the function, you must source the function from the `new_pas.R`, assuming it has been saved to same working directory as the `purpleair.R` script (@sec-saveload ).
+The R script `new_pas.R` contains a function `new_pas()` that performs these background processes automatically. To load in the function, you must source the function from the `new_pas.R`, assuming it has been saved to same working directory as the `purpleair.R` script called `mypath` (@sec-saveload ).
 
 ```{r load_new_pas}
 # Load in the new_pas() function from file
-source("new_pas.R")
+source(here(mypath, "new_pas.R"))
 ```
 
 ::: callout-tip
@@ -430,7 +501,7 @@ When this code is run, the following steps are performed in this order:
     If you run this function after creating a PAS file named `pas_filename`, it should detect that file and read it in automatically without calling on the PurpleAir dashboard and having to waste points recreating the PAS data.
     :::
 
-3.  The function then checks if an API Key has been set for the current R session. If you followed the steps in @sec-setAPI, `new_pas()` should verify that an API Key has already been set and a message should be displayed. If no API Key is found, the function then checks the folder specified by `folder_location` for the file `API_KEY.R`. If the function finds it, then the file is read in and the variable `PurpleAir_API` is then set as the API Key. An error message displays if the function is unable to find the file with the API Key or set the API Key.
+3.  The function then sets the API Key. If you followed the steps in @sec-setAPI, `new_pas()` should verify that an API Key has already been set. If no API Key is found, the function then checks the folder specified by `folder_location` for the file `API_KEY.R`. If the function finds it, then the file is read in and the variable `PurpleAir_API` is then set as the API Key. An error message displays if the function is unable to find the file with the API Key or set the API Key. If you changed your API Key, running this function will automatically update to the new API Key.
 
     ::: callout-warning
     You must create and set a valid API Key before you can read data from the PurpleAir dashboard. This involves creating a project with the PurpleAir dashboard and then saving the API Key to your computer as its own file (in this case, `API_KEY.R`). The API Key is unique and is tied to the user, not the project. You do not need a new API Key each time a new PAS is created. For more information, see @sec-createAPI for creating API Keys and @sec-setAPI for saving and setting the API Key.
@@ -457,7 +528,7 @@ It is possible to load pre-generated PAS objects from a data archive specified b
 setArchiveBaseUrl("https://airfire-data-exports.s3-us-west-2.amazonaws.com/PurpleAir/v1")
 ```
 
-Archived PAS objects can be loaded very quickly with the `pas_load()` function, which obtains PAS objects from the archive specified with `setArchvieBaseUrl()`. When used without specifying the `datestamp` argument, `pas_load()` will obtain the most recently processed PAS object. But you can also use the `datestamp` argument inside `pas_load()` to load an archived PAS object from a specified date.
+Archived PAS objects can be loaded very quickly with the `pas_load()` function, which obtains PAS objects from the URL archive specified with `setArchvieBaseUrl()`. When used without specifying the `datestamp` argument, `pas_load()` will obtain the most recently processed PAS object. But you can also use the `datestamp` argument inside `pas_load()` to load an archived PAS object from a specified date.
 
 The following example loads a pre-generated PAS object from April 10, 2020 from the above archive base URL:
 
@@ -466,10 +537,14 @@ The following example loads a pre-generated PAS object from April 10, 2020 from 
 pas_apr10 <- pas_load(datestamp="20200410")   # '20200410' = '4-10-2020'
 ```
 
+::: callout-note
+In the next section, we will explore an example PAS from the `AirSensor` package. The `purpleair.R` file contains code that has been adapted from the example to this archived PAS from April 10, 2020. This additional code is not displayed in this vignette for space reasons but they accomplish the same tasks, just using a different PAS file.
+:::
+
 ## Exploring Spatial Data {#sec-PAS-explore}
 
 ::: callout-note
-All the following R code chunks can be adapted to your own PAS object you create live (@sec-live) or archived (@sec-archive). For this demonstration, we will be using the example PAS from the `AirSensor` package to avoid long waiting times. This example PAS was generated on March 15, 2023 for outside sensors in California:
+For this demonstration, we will be using the example PAS from the `AirSensor` package to avoid long waiting times. This example PAS was generated on March 15, 2023 for outside sensors in California:
 
 ```{r pas_example}
 # Example PAS from AirSensor package
@@ -483,6 +558,10 @@ For more information about the example PAS and how it was created, run the code 
 # Open help documentation for example PAS
 help(example_pas)
 ```
+:::
+
+::: callout-tip
+All the following R code chunks can be adapted to your own PAS object you create live (@sec-live) or archived (@sec-archive). You just need to be careful to specify the correct column and variable names. Once you work through this example PAS, you should try these commands with your own PAS files.
 :::
 
 Take a look at the first 10 rows of the PAS data frame:
@@ -580,7 +659,7 @@ Just like the `new_pas.R` script in @sec-createPAS, the R script `new_pat.R` con
 
 ```{r load_new_pat}
 # Load in the new_pat() function from file
-source("new_pat.R")
+source(here(mypath, "new_pat.R"))
 ```
 
 ::: callout-warning
@@ -648,7 +727,7 @@ When this code is run, the following steps are performed in this order:
     If you run this function after creating a PAT file named `pas_filename`, it should detect that file and read it in automatically without calling on the PurpleAir dashboard and having to waste points recreating the PAT data.
     :::
 
-3.  The function then checks if an API Key has been set for the current R session. If you followed the steps in @sec-setAPI, `new_pat()` should verify that an API Key has already been set and a message should be displayed. If no API Key is found, the function then checks the folder specified by `folder_location` for the file `API_KEY.R`. If the function finds it, then the file is read in and the variable `PurpleAir_API` is then set as the API Key. An error message displays if the function is unable to find the file with the API Key or set the API Key.
+3.  The function then sets the API Key. If you followed the steps in @sec-setAPI, `new_pat()` should verify that an API Key has already been set and a message should be displayed. If no API Key is found, the function then checks the folder specified by `folder_location` for the file `API_KEY.R`. If the function finds it, then the file is read in and the variable `PurpleAir_API` is then set as the API Key. An error message displays if the function is unable to find the file with the API Key or set the API Key. If you changed your API Key within the `API_KEY.R` file, `new_pat()` will automatically update the API Key for you.
 
     ::: callout-warning
     You must create and set a valid API Key before you can read data from the PurpleAir dashboard. This involves creating a project with the PurpleAir dashboard and then saving the API Key to your computer as its own file (in this case, `API_KEY.R`). The API Key is unique and is tied to the user, not the project. You do not need a new API Key each time a new PAT is created. For more information, see @sec-createAPI for creating API Keys and @sec-setAPI for saving and setting the API Key.
