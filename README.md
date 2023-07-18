@@ -4,27 +4,24 @@ This is an vignette for users of PurpleAir sensors to obtain real-time air pollu
 
 ## Goals
 
--   Install R and RStudio on a computer.
-
--   Explore how to use the RStudio environment.
-
 -   Explain how to install and load R packages necessary for this vignette.
-
--   Become familiar with the [PurpleAir API dashboard](https://develop.purpleair.com/keys), including creating projects and API Keys.
-
--   Create or load PurpleAir Synoptic (PAS) data objects in R and explore it using interactive maps.
-
--   Create or load PurpleAir Time Series (PAT) data objects in R and explore it using time series plots.
+-   Become familiar with the [PurpleAir API dashboard](https://develop.purpleair.com/keys).
+-   Create and set API Keys associated with the PurpleAir API dashboard.
+-   Create or load PurpleAir Synoptic (PAS) data objects into R from the PurpleAir API dashboard.
+-   Load archive PAS data files from a URL that hosts archived PurpleAir files.
+-   Perform basic exploratory analysis of PAS files in R by creating interactive maps.
+-   Create or load PurpleAir Time Series (PAT) data objects into R from the PurpleAir API dashboard.
+-   Perform basic exploratory analysis of PAT files in R by examining time series plots.
 
 ## Prerequisites
 
--   A computer running either Windows, Mac, or Linux operating systems to install and run R and RStudio.
-
+-   A computer running either Windows, Mac, or Linux operating systems.
+-   Have both R and RStudio installed in your computer. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system. After installing R, you will then need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/).
+-   Be familiar with basic operations in the R programming language.
 -   A stable internet connection.
+-   A [Google account](https://support.google.com/accounts/answer/27441?hl=en) or [GMail account](https://support.google.com/mail/answer/56256?hl=en) to log into the [PurpleAir API dashboard](https://develop.purpleair.com/keys).
 
--   A [Google account](https://support.google.com/accounts/answer/27441?hl=en) or [GMail account](https://support.google.com/mail/answer/56256?hl=en).
-
-It is not necessary for the user to know how to use R before beginning this tutorial. Sections have been added to the vignette to teach the user how to install R and RStudio and to learn enough R skills to become familiar with its R commands. If you are already familiar with how to use R, no additional knowledge is necessary to work through this exercise.
+It is assumed the user has a basic understanding of the R programming language but no extensive experience is required. Only essential code is provided in the vignette. Detailed descriptions are included for all the code blocks to explain each process. Additional code and examples are provided in the `purpleair.R` file for you to try as exercises.
 
 ## Getting Started
 
@@ -40,7 +37,7 @@ Download the following files from our GitHub page:
 To download a file, click on the file name at the top of this page. This will then open the file within GitHub. In the top-right corner, click on the icon that says **Download raw file**. Make sure that you download the raw `.R` files and not the HTML versions. Use the left-side panel to then open the next file to download. Repeat this process until all the files are downloaded.
 
 
-Save all the files into one (preferrably new) folder. Make a mental note of the location of this folder, since you will need to reference its file path later in the tutorial. After you install both R and RStudio, clicking on any of these `.R` files should open RStudio and set your current working directory to the folder where these files are located. Make sure that the current working directory points to the folder containing these `.R` files. You can use the R package `here` to set up the correct working directory so that files are loaded and saved in the correct location on your computer. See the vignette for additional details.
+Save all the files into one (preferrably new) folder. Remember the location of this folder, since you will need to reference its file path later in the tutorial. After you install both R and RStudio, clicking on any of these `.R` files should open RStudio and set your current working directory to the folder where these files are located. Make sure that the current working directory points to the folder containing these `.R` files. You can use the R package `here` to set up the correct working directory so that files are loaded and saved in the correct location on your computer. See the vignette for additional details.
 
 ## Additional Links
 
