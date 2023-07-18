@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 17, 2023"
+date: "July 18, 2023"
 format:
   html:
     output-file: "index.html"
@@ -147,7 +147,44 @@ head(mileage, n=20)
 
 The first thing to do when starting a new R session is to set the **working directory -** a specific file path location on your computer. Whenever R fetches for a file on your computer, it will always check the working directory first. The default working directory may be different depending on how RStudio starts. You can verify the default working directory in RStudio by clicking on **Tools** \> **Global Options** and looking under the **Basic** tab in the **General** section. However, if you click on an R script on your computer, RStudio should start (by default) with the R script displayed in the Source Pane but the working directory will be the folder where the R script used to open RStudio is located. Because the working directory may change depending on how RStudio opens, it is always a good idea to set and verify the working directory before running any code.
 
-The R package `here` can identify the current working directory of your R session based on where you saved the `purpleair.R` file. We will discuss more about R packages in the next section @sec-packages.First install the package using the `install.packages()` function with the name of the package `here` in quotes, referred to as a **character string**:
+Checking your working directory also ensures that your files will be read and saved in the correct location. If you try to load in a file with the wrong working directly, R (probably) won't find the file it is looking for and will print an error message in the console saying no such file exists there. In addition, saving files without verifying the working directory may cause those files to save in an unexpected location on your computer.
+
+You can use the function `getwd()` to obtain the current working directory:
+
+```{r getwd}
+# Check the current working directory
+getwd()
+```
+
+This should return a file path that should point to the root folder - the folder that contains the files `purpleair.R`, `new_pas.R`, and `new_pat.R`.
+
+::: callout-tip
+If you opened either the `purpleair.R`, `new_pas.R` or `new_pat.R` files that should be saved in the same folder location, the working directory should already be correctly set. Nevertheless, it is always a good idea to check the working directory first to make sure it is correct.
+:::
+
+If the file path displayed by `getwd()` is incorrect, you will need to change the working directory by following these steps:
+
+1.  In the RStudio window at the top, click **Session** \> **Set Working Directory** \> **Choose Directory...**. A navigation window should appear, showing you the contents of the root folder of the working directory.
+
+    ![Changing the work directory at the beginning of an R session.](setwd.png){width="450"}
+
+2.  Navigate to the root folder where `purpleair.R`, `new_pas.R`, and `new_pat.R` are saved.
+
+3.  Click **Open**.
+
+4.  R automatically sets the new working directory using the function `setwd()` in the Console Pane.
+
+    ::: callout-tip
+    Feel free to copy this line of code from the Console Pane to the `purpleair.R` script. Make sure to remove the `>` symbol (the **command prompt**) at the beginning of the line when doing so. By copying in the `setwd()` statement into the R script, you can then set the working directory by simply running this line of code.
+    :::
+
+5.  Verify that you have set your working directory correctly using the `getwd()` function again.
+
+::: callout-important
+Always start a brand new R session before changing the working directory. The working directory should always be set first before performing any tasks. For example, the `here` package (described next) sets the default file path to the current working directory, and only when the package is first loaded. Changing the working directory afterwards will not change the file path.
+:::
+
+The R package `here` can help navigate the locations of folders within a working directory. We will discuss more about R packages in the @sec-packages. First, install the package using the `install.packages()` function with the name of the package `here` in quotes, referred to as a **character string**:
 
 ```{r install_here}
 #| eval: false

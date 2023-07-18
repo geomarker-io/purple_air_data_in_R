@@ -1,6 +1,6 @@
 ##### PURPLEAIR TUTORIAL R SCRIPT #####
 ## Author: Stephen Colegate
-## Last Updated: 7/17/2023
+## Last Updated: 7/18/2023
 
 # This is the 'purpleair.R' script that is used with the vignette 'PurpleAir
 # Data Exploration' for the RISE program at Cincinnati Children's Hospital
@@ -25,8 +25,11 @@ sqrt(y)   # sqrt = square-root
 
 # Saving/Loading Data -----------------------------------------------------
 
+# Check the current working directory
+getwd()
+
 # Install the 'here' package - only run this once
-install.packages("here")
+# install.packages("here")
 
 # Load the 'here' package
 library(here)
@@ -47,8 +50,8 @@ head(mycars, n=10)
 # Packages ----------------------------------------------------------------
 
 # Only run once to install (select YES to load binary packages)
-install.packages(c('dplyr', 'ggplot2', 'devtools',
-                   'MazamaCoreUtils', 'MazamaSpatialUtils'))
+# install.packages(c('dplyr', 'ggplot2', 'devtools',
+#                    'MazamaCoreUtils', 'MazamaSpatialUtils'))
 
 # Install the 'AirSensor' package - only need to run once
 devtools::install_github("MazamaScience/AirSensor")
