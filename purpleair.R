@@ -1,82 +1,67 @@
 ##### PURPLEAIR TUTORIAL R SCRIPT #####
 ## Author: Stephen Colegate
-## Last Updated: 7/18/2023
+## Last Updated: 7/26/2023
 
 # Links to the GitHub site and the tutorial itself:
 # GitHub page: https://github.com/geomarker-io/purple_air_data_in_R/tree/main#readme
 # PurpleAir Data Exploration Tutorial: https://geomarker.io/purple_air_data_in_R/#sec-live
 
-# Saving/Loading Data -----------------------------------------------------
+# Loading R Scripts -------------------------------------------------------
 
-# Install the 'here' package - only run this once
-# install.packages("here")
+# Download 'purpleair.R' file from GitHub
+download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/purpleair.R", destfile = "purpleair.R")
 
-# Load the 'here' package
-library(here)
+# Download 'new_pas.R' file from GitHub
+download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pas.R", destfile = "new_pas.R")
 
-# Set working directory first!
-
-# Save the file path location
-mypath <- here()
-mypath
+# Download 'new_pat.R' file from GitHub
+download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pat.R", destfile = "new_pat.R")
 
 
 # Packages ----------------------------------------------------------------
 
-# Only run once to install (select YES to load binary packages)
-# install.packages(c('dplyr', 'ggplot2', 'devtools',
-#                    'MazamaCoreUtils', 'MazamaSpatialUtils'))
+##### Install Packages #####
+# Install the following packages - only need to run once
+install.packages(c('dplyr', 'ggplot2', 'devtools'))
 
-# Install the 'AirSensor' package - only need to run once
-# devtools::install_github("MazamaScience/AirSensor")
+# Install the 'MazamaCoreUtils' package - only need to run once
+install.packages('MazamaCoreUtils')
+
+# Install the 'AirSensor2' package - only need to run once
+devtools::install_github('mazamascience/AirSensor2')
+
+#####
 
 # Load required R packages
 library(dplyr)
 library(ggplot2)
-library(MazamaCoreUtils)
-library(MazamaSpatialUtils)
-library(AirSensor)
+library(AirSensor2)
 
 
 # Fetch and Set API Key ---------------------------------------------------
 
-# Read 'API_KEY.R' file containing the API Key
-source(here(mypath, "API_KEY.R"))
+# Copy and paste this line into a new R script with your API Key
+PurpleAir_API = "YOUR_API_KEY"
 
-# Set the API Key
-setAPIKey(provider = "PurpleAir-read", key = PurpleAir_API)
+# Read 'API_KEY.R' file containing the API Key
+source("API_KEY.R")
 
 
 # Read Live PAS from PurpleAir Dashboard ----------------------------------
 
 # Load in the new_pas() function from file
-source(here(mypath, "new_pas.R"))
+source("new_pas.R")
 
 # Create new PAS of Hamilton County, Ohio sensors from past 7 days
-pas <- new_pas(pas_filename = "PAS_Hamilton.rds",
-               folder_location = here(),
-               API_filename = "API_KEY.R",
-               folder_name = "pas_data",
-               countryCodes = "US",
-               stateCodes = "OH",
-               counties = "Hamilton",
-               lookbackDays = 7,
-               location_type = NULL)
+pas <- new_pas(pas_filename = "PAS_Hamilton.rds", API_filename = "API_KEY.R",
+               countryCodes = "US", stateCodes = "OH", counties = "Hamilton",
+               lookbackDays = 7, location_type = NULL)
 
-
-# Read Archived PAS Data --------------------------------------------------
-
-# Set URL location of pre-generated data files
-setArchiveBaseUrl("https://airsensor.aqmd.gov/PurpleAir/v1/")
-
-# Load a PAS object from a specific date
-pas_apr10 <- pas_load(datestamp="20220410")   # '20220410' = '4-10-2022'
+# Example PAS from AirSensor package (only run if you could not download PAS)
+pas <- AirSensor2::example_pas
 
 
 # Explore PAS -------------------------------------------------------------
-
-# Example PAS from AirSensor package (can use above PAS file you created here)
-pas <- AirSensor::example_pas
 
 # Take a look at only PM2.5 data
 pm25 <- pas %>%
@@ -87,20 +72,61 @@ print(pm25, n=10)
 pas %>%
   pas_leaflet(parameter = "pm2.5_60minute")
 
-# Apply filtering of sensors
+# Filter sensors with moderate air quality
 pas %>%
-  pas_filter(stateCode == "CA", pm2.5_24hour > 12.0) %>%
+  pas_filter(pm2.5_24hour > 12.0) %>%
   pas_leaflet(parameter = "pm2.5_24hour")
 
 # Plot interactive map of temperature, removing missing data
 pas %>%
-  pas_filter(stateCode == "CA", !is.na(temperature)) %>%
+  pas_filter(!is.na(temperature)) %>%
   pas_leaflet(parameter = "temperature")
 
-#####
 
-# Example using the archived PAS (not shown in tutorial)
+# Loading PAT Data --------------------------------------------------------
+
+# Load in the new_pat() function from file
+source("new_pat.R")
+
+# Create new PAT of one sensor from July 1 through July 8
+pat <- new_pat(pat_filename = "July_CFD12.rds", pas_filename = "PAS_Hamilton.rds",
+               API_filename = "API_KEY.R", sensor_index = 176557,
+               start_date = "2023-07-01", end_date = "2023-07-08")
+
+# Example PAT from AirSensor package (only run if you could not download PAT)
+pat <- AirSensor2::example_pat
+
+
+# Explore PAT -------------------------------------------------------------
+
+# Pull time series data from PAT
+pat_data <- pat$data
+names(pat_data)
+
+# Plot time series of temperature
+pat_data %>%
+  ggplot()+
+  geom_line(aes(x=datetime, y=temperature), color="orange", lwd=1.0)+
+  theme_bw()+
+  xlab("Time")+ylab("Temperature")+
+  ggtitle("PurpleAir Time Series Plot of Temperature")
+
+# Plot time series of PM2.5 from Channel A & B
+pat_data %>%
+  ggplot()+
+  geom_line(aes(x=datetime, y=pm25_A), color="red", lwd=0.6, alpha=0.8)+
+  geom_line(aes(x=datetime, y=pm25_B), color="blue", lwd=0.6, alpha=0.5)+
+  theme_bw()+
+  xlab("Time")+ylab("pm2.5")+
+  ggtitle("PurpleAir PM2.5 Time Series Plot")
+
+
+# OPTIONAL: Read Archived PAS Data ----------------------------------------
+
+# Set URL location of pre-generated data files
 setArchiveBaseUrl("https://airsensor.aqmd.gov/PurpleAir/v1/")
+
+# Load a PAS object from a specific date
 pas_apr10 <- pas_load(datestamp="20220410")   # '20220410' = '4-10-2022'
 
 # Take a look at only PM2.5 data
@@ -127,52 +153,3 @@ pas_apr10 %>%
   pas_filter(stateCode %in% c("IN","KY","OH"), !is.na(temperature)) %>%
   pas_leaflet(parameter = "temperature")
 
-
-# Loading PAT Data --------------------------------------------------------
-
-# Load in the new_pat() function from file
-source(here(mypath, "new_pat.R"))
-
-# Create new PAT of one sensor from July 1 through July 8
-mypat <- new_pat(pat_filename = "July_CFD12.rds",
-                 folder_location = here(),
-                 pas_filename = "PAS_Hamilton.rds",
-                 API_filename = "API_KEY.R",
-                 sensor_index = 176557,
-                 start_date = "2023-07-01",
-                 end_date = "2023-07-08",
-                 time_zone = "UTC")
-
-
-# Explore PAT -------------------------------------------------------------
-
-# Example PAT from AirSensor package
-pat <- AirSensor::example_pat
-
-# Plot raw sensor data
-pat %>%
-  pat_multiplot(plottype="all")
-
-# Filter dates from the PAT object
-pat_fourth <- pat %>%
-  pat_filterDate(startdate=20220702, enddate=20220705)
-
-# Plot only PM2.5 data covering only the 4th of July weekend 2022
-pat_fourth %>%
-  pat_multiPlot(plottype = "pm25_over")
-
-# Compare sensor data with hourly data from federal monitor
-pat_fourth %>%
-  pat_externalFit()
-
-# Identify any outliers and replace them with window median values
-pat_fourth_filter <- pat_fourth %>%
-  pat_outliers(replace = TRUE, showPlot = TRUE)
-
-# Compare Channel A and Channel B of the sensors
-pat_fourth_filter %>%
-  pat_internalFit()
-
-# Correlations to check that sensors are properly functioning
-pat_fourth_filter %>%
-  pat_scatterPlotMatrix()
