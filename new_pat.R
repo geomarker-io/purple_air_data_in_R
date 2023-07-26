@@ -1,20 +1,19 @@
-new_pat <- function(pat_filename, folder_location,
-                    pas_filename, API_filename,
+new_pat <- function(pat_filename, pas_filename, API_filename,
                     sensor_index=NULL, start_date=NULL,
                     end_date=NULL, time_zone="UTC",
                     average=0){
   
   # Load necessary packages
   library(here)
-  library(AirSensor)
+  library(AirSensor2)
   library(MazamaSpatialUtils)
   
   # Check if the PAT object exists already
-  if(file.exists(here(folder_location, pat_filename))){
+  if(file.exists(pat_filename)){
     
     # Read in PAT if it exists
     message(paste("PAT with filename '", pat_filename, "' found! Loading PAT...", sep=""))
-    pat <- readRDS(file = here(folder_location, pat_filename))
+    pat <- readRDS(file = pat_filename)
     message(paste("PAT with filename '", pat_filename, "' successfully loaded!", sep=""))
     return(pat)
     
@@ -44,7 +43,7 @@ new_pat <- function(pat_filename, folder_location,
         }
       
       # Check if a required PAS object does not exist
-      if(!file.exists(here(folder_location, pas_filename))){
+      if(!file.exists(pas_filename)){
         
         # Inform the user that no PAS was found in their filepath
         message(paste("Error: PAS with filename '", pas_filename, "' was not found.", sep=""))
@@ -54,7 +53,7 @@ new_pat <- function(pat_filename, folder_location,
         
         # Read in the PAS file
         message(paste("PAS with filename '", pas_filename, "' found! Loading PAS...", sep=""))
-        pas <- readRDS(file = here(folder_location, pas_filename))
+        pas <- readRDS(file = pas_filename)
         message(paste("PAS with filename '", pas_filename, "' successfully loaded!", sep=""))
         
         
@@ -67,7 +66,7 @@ new_pat <- function(pat_filename, folder_location,
                              timezone=time_zone,
                              average=average)
         message("New PAT data downloaded successfully from PurpleAir. Saving file...")
-        saveRDS(pat, file = here(folder_location, pat_filename))
+        saveRDS(pat, file = pat_filename)
         message(paste("PAT file", pat_filename, "successfully saved!"))
         return(pat)
       }
