@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration Vignette"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 18, 2023"
+date: "July 25, 2023"
 format:
   html:
     output-file: "index.html"
@@ -31,6 +31,22 @@ This rendered HTML of all the code and relevant output is hosted online on our G
 Throughout this tutorial, we assume that you already have R and RStudio installed on your computer and know the basics with how to use the R programming language. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system [@rcoreteam2013]. After installing R, you will then need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an integrated development environment (IDE) to help data scientists be more productive with R [@rstudioteam2020a].
 
 This section describes how to set up your R session to prepare to work with the necessary packages, functions, and files that will be created, loaded and saved to your computer.
+
+::: callout-important
+It is highly recommended that you are somewhat familiar with using R and RStudio before continuing on with this vignette. If you want to learn more about the basics of R and RStudio, [another vignette is available on GitHub](https://github.com/colegasn/Rintro) that walks through everything you need to know before you begin. Topics that are assumed here (and covered in the [R tutorial vignette](https://colegasn.github.io/Rintro/)) include the following:
+
+-   Install R and RStudio onto your computer.
+
+-   Become familiar with the RStudio environment.
+
+-   Opening and using R scripts.
+
+-   Saving and loading data files.
+
+-   Sourcing another R script.
+
+-   Installing and loading R packages.
+:::
 
 ### Downloading Files {#sec-download}
 
