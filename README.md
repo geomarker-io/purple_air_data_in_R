@@ -17,11 +17,11 @@ This is an vignette for users of PurpleAir sensors to obtain real-time air pollu
 
 -   A computer running either Windows, Mac, or Linux operating systems.
 -   Have both R and RStudio installed in your computer. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system. After installing R, you will then need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/).
--   Be familiar with basic operations in the R programming language.
+-   Be familiar with basic operations in the R programming language. If you are not familiar with R, [this vignette](https://colegasn.github.io/Rintro/) explains how to install R and RStudio on your computer as well as the basics of R programming, including setting a working directory, becoming familiar with the RStudio environment, opening and using R scripts, writing code and interpreting output, saving and loading data, sourcing a R script, and installing and loading packages. This tutorial is publicly available on [GitHub](https://github.com/colegasn/Rintro). It is highly recommended that you understand the basics of R before exploring this vignette.
 -   A stable internet connection.
 -   A [Google account](https://support.google.com/accounts/answer/27441?hl=en) or [GMail account](https://support.google.com/mail/answer/56256?hl=en) to log into the [PurpleAir API dashboard](https://develop.purpleair.com/keys).
 
-It is assumed the user has a basic understanding of the R programming language but no extensive experience is required. Only essential code is provided in the vignette. Detailed descriptions are included for all the code blocks to explain each process. Additional code and examples are provided in the `purpleair.R` file for you to try as exercises.
+It is assumed the user has a basic understanding of the R programming language but no extensive experience is required. Only essential code is provided in the vignette. Detailed descriptions are included for all the code blocks to explain each process. Additional code and examples are provided in the `purpleair.R` file for you to try as exercises. 
 
 ## Getting Started
 
@@ -37,7 +37,6 @@ Download the following files from our GitHub page:
 -   [`new_pat.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/new_pat.R)
 
 To download a file, click on the file name to preview the file within GitHub. In the top-right corner of the preview page, click on the icon that says **Download raw file**. Make sure that you download the raw `.R` files and not the HTML versions. Use the left-side panel to then open the next file to download. Repeat this process until all the files are downloaded.
-
 
 Save all the files into one (preferrably new) folder. Remember the location of this folder, since you will need to reference its file path later in the tutorial. After you install both R and RStudio, clicking on any of these `.R` files should open RStudio and set your current working directory to the folder where these files are located. Make sure that the current working directory points to the folder containing these `.R` files. You can use the R package `here` to set up the correct working directory so that files are loaded and saved in the correct location on your computer. See the vignette for additional details.
 
