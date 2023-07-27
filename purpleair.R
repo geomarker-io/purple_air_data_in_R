@@ -120,36 +120,3 @@ pat_data %>%
   xlab("Time")+ylab("pm2.5")+
   ggtitle("PurpleAir PM2.5 Time Series Plot")
 
-
-# OPTIONAL: Read Archived PAS Data ----------------------------------------
-
-# Set URL location of pre-generated data files
-setArchiveBaseUrl("https://airsensor.aqmd.gov/PurpleAir/v1/")
-
-# Load a PAS object from a specific date
-pas_apr10 <- pas_load(datestamp="20220410")   # '20220410' = '4-10-2022'
-
-# Take a look at only PM2.5 data
-pm25 <- pas_apr10 %>%
-  select(locationID, starts_with("pm25_"))
-print(pm25, n=10)
-
-# Plot interactive leaflet map of 1-hour average PM2.5
-pas_apr10 %>%
-  pas_leaflet(parameter = "pm25_1hr")
-
-# Apply filtering of sensors
-pas_apr10 %>%
-  pas_filter(stateCode == "OH", pm25_1day > 12.0) %>%
-  pas_leaflet(parameter = "pm25_1day")
-
-# Plot interactive map of temperature, removing missing data
-pas_apr10 %>%
-  pas_filter(stateCode == "FL", !is.na(temperature)) %>%
-  pas_leaflet(parameter = "temperature")
-
-# Plot interactive map of temperature for tri-state, removing missing data
-pas_apr10 %>%
-  pas_filter(stateCode %in% c("IN","KY","OH"), !is.na(temperature)) %>%
-  pas_leaflet(parameter = "temperature")
-
