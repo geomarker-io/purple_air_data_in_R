@@ -47,7 +47,7 @@ PurpleAir_API = "YOUR_API_KEY"
 source("API_KEY.R")
 
 
-# Read Live PAS from PurpleAir Dashboard ----------------------------------
+# Read PAS from PurpleAir Dashboard ---------------------------------------
 
 # Load in the new_pas() function from file
 source("new_pas.R")
@@ -61,7 +61,7 @@ pas <- new_pas(pas_filename = "PAS_Hamilton.rds", API_filename = "API_KEY.R",
 pas <- AirSensor2::example_pas
 
 
-# Explore PAS -------------------------------------------------------------
+# Explore PAS File --------------------------------------------------------
 
 # Take a look at only PM2.5 data
 pm25 <- pas %>%
@@ -97,7 +97,7 @@ pat <- new_pat(pat_filename = "July_CFD12.rds", pas_filename = "PAS_Hamilton.rds
 pat <- AirSensor2::example_pat
 
 
-# Explore PAT -------------------------------------------------------------
+# Explore PAT File --------------------------------------------------------
 
 # Pull time series data from PAT
 pat_data <- pat$data
