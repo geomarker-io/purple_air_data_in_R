@@ -27,18 +27,22 @@ It is assumed the user has a basic understanding of the R programming language b
 
 Click [here](https://geomarker.io/purple_air_data_in_R/) to access the vignette, or click the URL link under the **About** section on the GitHub page. This should open an HTML document of the vignette.
 
-It is highly recommended that you follow along with the HTML vignette by setting up and running the R code provided on your computer to get the most out of this tutorial. For your convenience, we have taken the R code listed in the HTML document and saved it in an R script `purpleair.R`. You can file this file listed at the top of the GitHub page.
+For your convenience, we have taken all the R code specified in the HTML page and saved it into an R script named `purpleair.R`. It is highly recommended that you follow along with the HTML vignette by downloading `purpleair.R` that walks through the setup process. The code in the `purpleair.R` file should be executed by the user as they work through the vignette to get the most out of this tutorial.
 
-Download the following files from our GitHub page:
--   [`purpleair.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/purpleair.R)
+First create a new R project inside RStudio (see [tutorial](https://colegasn.github.io/Rintro/) for details). The `purpleair.R` file and related files `new_pas.R` and `new_pat.R` can then be loaded into the R project folder by running these lines in the R console. Click on the clipboard icon on the top right of the code block below to copy these lines exactly as they appear below.
 
--   [`new_pas.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/new_pas.R)
+```{r}
+# Download 'purpleair.R' file from GitHub
+download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/purpleair.R", destfile = "purpleair.R")
 
--   [`new_pat.R`](https://github.com/geomarker-io/purple_air_data_in_R/blob/main/new_pat.R)
+# Download 'new_pas.R' file from GitHub
+download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pas.R", destfile = "new_pas.R")
 
-To download a file, click on the file name to preview the file within GitHub. In the top-right corner of the preview page, click on the icon that says **Download raw file**. Make sure that you download the raw `.R` files and not the HTML versions. Use the left-side panel to then open the next file to download. Repeat this process until all the files are downloaded.
+# Download 'new_pat.R' file from GitHub
+download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pat.R", destfile = "new_pat.R")
+```
 
-Save all the files into one (preferrably new) folder. Remember the location of this folder, since you will need to reference its file path later in the tutorial. After you install both R and RStudio, clicking on any of these `.R` files should open RStudio and set your current working directory to the folder where these files are located. Make sure that the current working directory points to the folder containing these `.R` files. You can use the R package `here` to set up the correct working directory so that files are loaded and saved in the correct location on your computer. See the vignette for additional details.
+With the R project open in RStudio, paste these lines of code in the command prompt and execute them. Once the files have been downloaded to the R project folder, you can then begin the tutorial by clicking on the `purpleair.R` file in the **Files** tab of the Output Pane. All other files that are needed will be indicated in the vignette when prompted. 
 
 ## Additional Links
 
@@ -53,3 +57,5 @@ Learn more about PurpleAir and the PurpleAir Dashboard through the following lin
 -   [Creating API Keys guide](https://community.purpleair.com/t/creating-api-keys/3951).
 
 -   [PurpleAir Data Structure guide](https://api.purpleair.com/#api-sensors-get-sensor-data).
+  
+-   [AirSensor2 package](https://github.com/MazamaScience/AirSensor2).
