@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration Vignette"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 26, 2023"
+date: "July 30, 2023"
 format:
   html:
     output-file: "index.html"
@@ -43,7 +43,7 @@ First open RStudio on your computer. At the top left, click **File** \> **New Pr
 ![Create a new R project within RStudio.](Rproject1.png){fig-align="center" width="400"}
 
 ::: callout-tip
-If you already have the folder created where all project files will be kept, you can reference this folder by selecting Existing Directory. This loads a navigation box where you can select your folder.
+If you already have the folder created where all project files will be kept, you can reference this folder by selecting **Existing Directory**. This loads a navigation box where you can select your folder.
 
 ![Select a folder that already exists to house the R project.](Rproject4.png){fig-align="center" width="400"}
 :::
@@ -70,14 +70,13 @@ After creating a new R project, download the necessary R files from our [GitHub 
 download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/purpleair.R", destfile = "purpleair.R")
 ```
 
-Inside RStudio, in the Console Pane, paste this code at the command prompt `>` and press ENTER. R should then go to our GitHub page, look for the `purpleair.R` file, and download the file into your R project folder. Verify the file has been downloaded by clicking on the **Files** tab in the Output Pane. Click on the `purpleair.R` file link inside the Files tab to open the R file inside RStudio. The `purpleair.R` file should now be included in the Source Pane.
+Inside RStudio, in the Console Pane, paste this code at the command prompt `>` and press **ENTER**. R should then go to our GitHub page, look for the `purpleair.R` file, and download the file into your R project folder. Verify the file has been downloaded by clicking on the **Files** tab in the Output Pane. Click on the `purpleair.R` file link inside the Files tab to open the R file inside RStudio. The `purpleair.R` file should now be included in the Source Pane.
 
 At the top of the R script, you should see code that downloads the `new_pas.R` and `new_pat.R` files from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R/tree/main):
 
 ```{r new_pas.R}
 # Download 'new_pas.R' file from GitHub
 download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pas.R", destfile = "new_pas.R")
-
 ```
 
 Running this code should download the `new_pas.R` file into your R project folder. Similarly, running the following code should download the `new_pat.R` file into your R project folder. Download each of these files one at a time to ensure they are saved properly to the folder.
@@ -94,6 +93,8 @@ You will need to install the following packages in an R session in order to use 
 -   [`dplyr`](https://cran.r-project.org/web/packages/dplyr/dplyr.pdf): a fast, consistent tool for working with data [@dplyr].
 
 -   [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/ggplot2.pdf): a system for creating graphics [@ggplot2].
+
+-   [`devtools`](https://www.r-project.org/nosvn/pandoc/devtools.html): a package that allows experienced R users to create and deploy R packages of their own [@devtools-2].
 
 -   [`MazamaCoreUtils`](https://cran.r-project.org/web/packages/MazamaCoreUtils/MazamaCoreUtils.pdf): a suite of utility functions for working with AirSensor package [@MazamaCoreUtils].
 
