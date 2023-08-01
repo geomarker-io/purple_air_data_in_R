@@ -2,7 +2,7 @@
 title: "PurpleAir Data Exploration Vignette"
 subtitle: "RISE Presentation"
 author: "Stephen Colegate"
-date: "July 30, 2023"
+date: "July 31, 2023"
 format:
   html:
     output-file: "index.html"
@@ -285,11 +285,7 @@ The `new_pas()` function has several options available you can specify:
 
 -   `pas_filename`: Name of the PAS file (in quotes) that will be created.
 
--   `folder_location`: The file path of the current root directory where the PAS will be saved to.
-
--   `API_filename`: The name of the file (in quotes) where the API Key is saved as the variable name `PurpleAir_API` (@sec-setAPI).
-
--   `folder_name`: The name of the folder (in quotes) to save spatial data needed to create the PAS, defaults to `"pas_data"`.
+-   `API_filename`: The name of the file (in quotes) where the API Key is saved as the variable name `PurpleAir_API` (@sec-setAPI). In this vignette, the name of the file is `API_KEY.R`.
 
 -   `countryCodes`: Identify the country to subset the sensor data from (in quotes); defaults to `"US"`.
 
@@ -306,13 +302,9 @@ As an example, suppose we wish to create a PAS showcasing all (indoor and outdoo
 ```{r new_pas}
 #| eval: false
 # Create new PAS of Hamilton County, Ohio sensors from past 7 days
-pas <- new_pas(pas_filename = "PAS_Hamilton.rds",
-               API_filename = "API_KEY.R",
-               countryCodes = "US",
-               stateCodes = "OH", 
-               counties = "Hamilton",
-               lookbackDays = 7,
-               location_type = NULL)
+pas <- new_pas(pas_filename = "PAS_Hamilton.rds", API_filename = "API_KEY.R",
+               countryCodes = "US", stateCodes = "OH", counties = "Hamilton",
+               lookbackDays = 7, location_type = NULL)
 ```
 
 When this code is run, the following steps are performed in this order:
@@ -502,21 +494,14 @@ From this scanner in the PAS file `PAS_Hamilton.rds` that was created in @sec-cr
 ```{r new_pat}
 #| eval: false
 # Create new PAT of one sensor from July 1 through July 8
-mypat <- new_pat(pat_filename = "July_CFD12.rds",
-                 folder_location = here(),
-                 pas_filename = "PAS_Hamilton.rds",
-                 API_filename = "API_KEY.R",
-                 sensor_index = 176557,
-                 start_date = "2023-07-01",
-                 end_date = "2023-07-08",
-                 time_zone = "UTC")
+pat <- new_pat(pat_filename = "July_CFD12.rds", pas_filename = "PAS_Hamilton.rds",
+               API_filename = "API_KEY.R", sensor_index = 176557,
+               start_date = "2023-07-01", end_date = "2023-07-08")
 ```
 
 The `new_pat()` function has several options available you can specify:
 
 -   `pat_filename`: Name of the PAT file (in quotes) that will be created.
-
--   `folder_location`: The file path of the current root directory where the PAT will be saved to.
 
 -   `pas_filename`: Name of the PAS file (in quotes) that will be used to identify the sensor_index. A PAS file must be created before creating a PAT file. See @sec-createPAS for details.
 
@@ -666,7 +651,9 @@ A reliable scanner should have PM~2.5~ readings from Channel A and B that are cl
 
 # Acknowledgements {#sec-thanks}
 
-Special thanks to Dr. Cole Brokamp and Dr. Patrick Ryan for allowing me to speak at this workshop. Thank you for Andrew Vancil and Erika Manning for their review and feedback of the vignette.
+Thanks to Dr. Cole Brokamp for proofreading the vignette, offering suggestions for downloading the R files from GitHub, and for suggesting me to lead this session. Special thanks to Dr. Daniel Hargraves and Dr. Patrick Ryan for allowing me to speak at the RISE Communities Program at Cincinnati Children's Hospital Medical Center. I also wish to thank Andrew Vancil and Erika Manning for working through the vignette during our weekly lab meeting, proofreading the manuscript, and offering suggestions to improve this tutorial.
+
+If you have any comments or suggestions to improve this tutorial, I'd love to hear from you! Please email me your feedback at [stephen.colegate\@cchmc.org](stephen.colegate@cchmc.org).
 
 # References
 
