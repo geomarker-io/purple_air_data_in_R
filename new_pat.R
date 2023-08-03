@@ -4,7 +4,6 @@ new_pat <- function(pat_filename, pas_filename, API_filename,
                     average=0){
   
   # Load necessary packages
-  library(here)
   library(AirSensor2)
   library(MazamaSpatialUtils)
   

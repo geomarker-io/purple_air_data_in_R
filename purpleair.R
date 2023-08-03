@@ -111,7 +111,7 @@ pat_data %>%
   xlab("Time")+ylab("Temperature")+
   ggtitle("PurpleAir Time Series Plot of Temperature")
 
-# Plot time series of PM2.5 from Channel A & B
+# Plot time series of PM2.5 from Channel A & B (note column name!)
 pat_data %>%
   ggplot()+
   geom_line(aes(x=datetime, y=pm25_A), color="red", lwd=0.6, alpha=0.8)+
