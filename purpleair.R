@@ -1,122 +1,112 @@
-##### PURPLEAIR TUTORIAL R SCRIPT #####
+##### PURPLEAIR API DASHBOARD VIGNETTE #####
 ## Author: Stephen Colegate
-## Last Updated: 7/26/2023
+## Last Updated: 8/3/2024
 
-# Links to the GitHub site and the tutorial itself:
-# GitHub page: https://github.com/geomarker-io/purple_air_data_in_R/tree/main#readme
-# PurpleAir Data Exploration Tutorial: https://geomarker.io/purple_air_data_in_R/#sec-live
+# GitHub link: https://github.com/geomarker-io/purple_air_data_in_R/tree/main#readme
+
+# PurpleAir API Dashboard Vignette link: https://geomarker.io/purple_air_data_in_R/
+
 
 # Loading R Scripts -------------------------------------------------------
 
 # Download 'purpleair.R' file from GitHub
 download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/purpleair.R", destfile = "purpleair.R")
 
-# Download 'new_pas.R' file from GitHub
-download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pas.R", destfile = "new_pas.R")
-
-# Download 'new_pat.R' file from GitHub
-download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pat.R", destfile = "new_pat.R")
-
 
 # Packages ----------------------------------------------------------------
 
-##### Install Packages #####
-# Install the following packages - only need to run once
-install.packages(c('dplyr', 'ggplot2', 'devtools'))
+# Install the PurpleAir package - only need to run once
+install.packages('PurpleAir')
 
-# Install the 'MazamaCoreUtils' package - only need to run once
-install.packages('MazamaCoreUtils')
+# Load the PurpleAir package
+library(PurpleAir)
 
-# Install the 'AirSensor2' package - only need to run once
-devtools::install_github('mazamascience/AirSensor2')
+# Install the tidyverse and sf packages - only need to run once
+install.packages(c('tidyverse', 'sf'))
+
+# Load required R packages
+library(tidyverse)
+library(sf)
+
+
+# Obtain and Set API Key ---------------------------------------------------
+
+# Copy and paste the line below into a new R script named 'API_KEY.R'
+# Replace "PASTE_API_KEY_HERE" with your personal API Key in quotes
+PURPLE_AIR_API_KEY = "PASTE_API_KEY_HERE"
+
+# Read the 'API_KEY.R' file containing your API Key
+source("API_KEY.R")
+
+# Set the API Key
+Sys.setenv(PURPLE_AIR_API_KEY = PURPLE_AIR_API_KEY)
+
+# Check that your API Key has been set correctly
+check_api_key(PURPLE_AIR_API_KEY)
+
+
+# Access PurpleAir API ----------------------------------------------------
+
+# Link to a list of fields: https://api.purpleair.com/#api-sensors-get-sensor-data
+
+# Get latest data from a single sensor
+sensor_data <- get_sensor_data(sensor_index = 176557,
+                               fields = c("name", "last_seen",
+                                          "pm2.5_cf_1", "pm2.5_atm"))
+sensor_data
+
+# Get latest data from multiple sensors
+multiple_data <- get_sensors_data(x = c(176557, 184705, 177011),
+                                  fields = c("name", "last_seen",
+                                             "pm2.5_cf_1", "pm2.5_atm"))
+multiple_data
+
+# Get sensor information from a boundary box
+boundary_data <- sf::st_bbox(c("xmin" = -84.5320, "ymin" = 39.0978,
+                               "xmax" = -84.5003, "ymax" = 39.1181),
+                             crs = 4326) |>
+  get_sensors_data(fields = c("name", "last_seen",
+                              "pm2.5_cf_1", "pm2.5_atm"))
+boundary_data
+
+# Link to OpenStreetMap to get coordinates: https://www.openstreetmap.org/
+
+# Get historical data from a sensor from July 3-6, 2024
+sensor_history <- get_sensor_history(sensor_index = 176557,
+                                     fields = c("pm1.0_cf_1", "pm1.0_atm",
+                                                "pm2.5_cf_1", "pm2.5_atm"),
+                                     start_timestamp = as.POSIXct("2024-07-03"),
+                                     end_timestamp = as.POSIXct("2024-07-06") )
+sensor_history
 
 #####
 
-# Load required R packages
-library(dplyr)
-library(ggplot2)
-library(AirSensor2)
+# Get a time-series plot of sensor readings
+sensor_history |>
+  tidyr::pivot_longer(cols = tidyr::starts_with("pm"),
+                      names_to = "pollutant", values_to = "concentration") |>
+  ggplot2::ggplot(ggplot2::aes(time_stamp, concentration, color = pollutant)) +
+  ggplot2::geom_line()
 
 
-# Fetch and Set API Key ---------------------------------------------------
+# Saving and Loading Data -------------------------------------------------
 
-# Copy and paste this line into a new R script with your API Key
-PurpleAir_API = "YOUR_API_KEY"
+# Save each data object for analysis later
+saveRDS(sensor_data, file="sensor_data.RDS")
+saveRDS(multiple_data, file="multiple_data.RDS")
+saveRDS(boundary_data, file="boundary_data.RDS")
+saveRDS(sensor_history, file="sensor_history.RDS")
 
-# Read 'API_KEY.R' file containing the API Key
-source("API_KEY.R")
+# Load each data object after a new R session
+sensor_data <- readRDS(file="sensor_data.RDS")
+sensor_data
 
+multiple_data <- readRDS(file="multiple_data.RDS")
+multiple_data
 
-# Read PAS from PurpleAir Dashboard ---------------------------------------
+boundary_data <- readRDS(file="boundary_data.RDS")
+boundary_data
 
-# Load in the new_pas() function from file
-source("new_pas.R")
-
-# Create new PAS of Hamilton County, Ohio sensors from past 7 days
-pas <- new_pas(pas_filename = "PAS_Hamilton.rds", API_filename = "API_KEY.R",
-               countryCodes = "US", stateCodes = "OH", counties = "Hamilton",
-               lookbackDays = 7, location_type = NULL)
-
-# Example PAS from AirSensor package (only run if you could not download PAS)
-pas <- AirSensor2::example_pas
-
-
-# Explore PAS File --------------------------------------------------------
-
-# Take a look at only PM2.5 data
-pm25 <- pas %>%
-  select(locationID, starts_with("pm2.5_"))
-print(pm25, n=10)
-
-# Plot interactive leaflet map of 1-hour average PM2.5
-pas %>%
-  pas_leaflet(parameter = "pm2.5_60minute")
-
-# Filter sensors with moderate air quality
-pas %>%
-  pas_filter(pm2.5_24hour > 12.0) %>%
-  pas_leaflet(parameter = "pm2.5_24hour")
-
-# Plot interactive map of temperature, removing missing data
-pas %>%
-  pas_filter(!is.na(temperature)) %>%
-  pas_leaflet(parameter = "temperature")
-
-
-# Loading PAT Data --------------------------------------------------------
-
-# Load in the new_pat() function from file
-source("new_pat.R")
-
-# Create new PAT of one sensor from July 1 through July 8
-pat <- new_pat(pat_filename = "July_CFD12.rds", pas_filename = "PAS_Hamilton.rds",
-               API_filename = "API_KEY.R", sensor_index = 176557,
-               start_date = "2023-07-01", end_date = "2023-07-08")
-
-# Example PAT from AirSensor package (only run if you could not download PAT)
-pat <- AirSensor2::example_pat
-
-
-# Explore PAT File --------------------------------------------------------
-
-# Pull time series data from PAT
-pat_data <- pat$data
-names(pat_data)
-
-# Plot time series of temperature
-pat_data %>%
-  ggplot()+
-  geom_line(aes(x=datetime, y=temperature), color="orange", lwd=1.0)+
-  theme_bw()+
-  xlab("Time")+ylab("Temperature")+
-  ggtitle("PurpleAir Time Series Plot of Temperature")
-
-# Plot time series of PM2.5 from Channel A & B (note column name!)
-pat_data %>%
-  ggplot()+
-  geom_line(aes(x=datetime, y=pm25_A), color="red", lwd=0.6, alpha=0.8)+
-  geom_line(aes(x=datetime, y=pm25_B), color="blue", lwd=0.6, alpha=0.5)+
-  theme_bw()+
-  xlab("Time")+ylab("pm2.5")+
-  ggtitle("PurpleAir PM2.5 Time Series Plot")
+sensor_history <- readRDS(file="sensor_history.RDS")
+sensor_history
 
