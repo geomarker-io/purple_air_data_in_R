@@ -1,17 +1,16 @@
 ## About
 
-This is an vignette for users of PurpleAir sensors to obtain real-time air pollution and meteorological data and to explore various ways of basic data analysis from PurpleAir data. The GitHub site here contains all the files needed for the user to get started quering and exploring PurpleAir data. This project is a part of **R**esearch **I**nnovations using **S**ensor Technology in **E**nvironmental Justice Communities (**RISE Communities**) to provide technical training in the application of low-cost sensors for indoor, outdoor, and personal air monitoring in Environmental Justice communities. The GitHub page is part of the RISE program hosted at Cincinnati Children's Hospital Medical Center August 1-3, 2023.
+This is an vignette for users of PurpleAir sensors to obtain real-time air pollution and meteorological data and to explore various ways of basic data analysis from PurpleAir data. The GitHub site here contains all the files needed for the user to get started quering and exploring PurpleAir data. This project is a part of **R**esearch **I**nnovations using **S**ensor Technology in **E**nvironmental Justice Communities (**RISE Communities**) to provide technical training in the application of low-cost sensors for indoor, outdoor, and personal air monitoring in Environmental Justice communities. The GitHub page is part of the RISE program hosted at Cincinnati Children's Hospital Medical Center August 7-9, 2024.
 
 ## Goals
 
 -   Explain how to install and load R packages necessary for this vignette.
 -   Become familiar with the [PurpleAir API dashboard](https://develop.purpleair.com/keys).
 -   Create and set API Keys associated with the PurpleAir API dashboard.
--   Create or load PurpleAir Synoptic (PAS) data objects into R from the PurpleAir API dashboard.
--   Load archive PAS data files from a URL that hosts archived PurpleAir files.
--   Perform basic exploratory analysis of PAS files in R by creating interactive maps.
--   Create or load PurpleAir Time Series (PAT) data objects into R from the PurpleAir API dashboard.
--   Perform basic exploratory analysis of PAT files in R by examining time series plots.
+-   Query the PurpleAir API dashboard from RStudio.
+-   Download PurpleAir data from a single sensor, multiple sensors, sensors within a boundary box, and historical data.
+-   Perform basic exploratory analysis of sensor data by creating a simple time series plot.
+-   Save and load sensor data to and from the R environment.
 
 ## Prerequisites
 
@@ -21,28 +20,24 @@ This is an vignette for users of PurpleAir sensors to obtain real-time air pollu
 -   A stable internet connection.
 -   A [Google account](https://support.google.com/accounts/answer/27441?hl=en) or [GMail account](https://support.google.com/mail/answer/56256?hl=en) to log into the [PurpleAir API dashboard](https://develop.purpleair.com/keys).
 
-It is assumed the user has a basic understanding of the R programming language but no extensive experience is required. Only essential code is provided in the vignette. Detailed descriptions are included for all the code blocks to explain each process. Additional code and examples are provided in the `purpleair.R` file for you to try as exercises. 
+It is assumed the user has a basic understanding of the R programming language but no extensive experience is required. Only essential code is provided in the vignette. Detailed descriptions are included for all the code blocks to explain each process. All the code that is included in the vignette is also available in the `purpleair.R` file, which is also available on this webpage. 
 
 ## Getting Started
 
-Click [here](https://geomarker.io/purple_air_data_in_R/) to access the vignette, or click the URL link under the **About** section on the GitHub page. This should open an HTML document of the vignette.
+Click [here](https://geomarker.io/purple_air_data_in_R/) to access the vignette, or click the URL link under the **About** section on the GitHub page. This should open an HTML document of the vignette in your preferred web browser.
 
-For your convenience, we have taken all the R code specified in the HTML page and saved it into an R script named `purpleair.R`. It is highly recommended that you follow along with the HTML vignette by downloading `purpleair.R` that walks through the setup process. The code in the `purpleair.R` file should be executed by the user as they work through the vignette to get the most out of this tutorial.
+For your convenience, we have taken all the R code provided in the HTML page and saved it into an R script named `purpleair.R`. It is highly recommended that you follow along with the HTML vignette by downloading `purpleair.R` that walks through the setup process. The code in the `purpleair.R` file should be performed by the user as they work through the vignette to get the most out of this tutorial.
 
-First create a new R project inside RStudio (see [tutorial](https://colegasn.github.io/Rintro/) for details). The `purpleair.R` file and related files `new_pas.R` and `new_pat.R` can then be loaded into the R project folder by running these lines in the R console. Click on the clipboard icon on the top right of the code block below to copy these lines exactly as they appear below.
+First create a new R project inside RStudio (see [tutorial](https://colegasn.github.io/Rintro/) for details). The `purpleair.R` file can then be downloaded and saved into the R project folder by running the corresponding line of code in the R console. Click on the clipboard icon on the top right of the code block below to copy the lines exactly as they appear below. Paste this line into the R console and then click **Run** or press **ENTER** to execute the command.
 
 ```{r}
 # Download 'purpleair.R' file from GitHub
 download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/purpleair.R", destfile = "purpleair.R")
-
-# Download 'new_pas.R' file from GitHub
-download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pas.R", destfile = "new_pas.R")
-
-# Download 'new_pat.R' file from GitHub
-download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pat.R", destfile = "new_pat.R")
 ```
 
-With the R project open in RStudio, paste these lines of code in the command prompt and execute them. Once the files have been downloaded to the R project folder, you can then begin the tutorial by clicking on the `purpleair.R` file in the **Files** tab of the Output Pane. All other files that are needed will be indicated in the vignette when prompted. 
+Once the files have been downloaded to the R project folder, you can then begin the tutorial by clicking on the `purpleair.R` file in the **Files** tab of the Output Pane. All other files that are needed will be created and indicated in the vignette when prompted. 
+
+Portions of this vignette use the new `PurpleAir` R package, developed by Dr. Cole Brokamp at Cincinnati Children's Hospital Medical Center. You can visit the GitHub page of this R package by clicking [here](https://github.com/cole-brokamp/PurpleAir).
 
 ## Additional Links
 
@@ -58,4 +53,4 @@ Learn more about PurpleAir and the PurpleAir Dashboard through the following lin
 
 -   [PurpleAir Data Structure guide](https://api.purpleair.com/#api-sensors-get-sensor-data).
   
--   [AirSensor2 package](https://github.com/MazamaScience/AirSensor2).
+-   [PurpleAir R Package on GitHub](https://github.com/cole-brokamp/PurpleAir).
