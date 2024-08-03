@@ -1,8 +1,8 @@
 ---
-title: "PurpleAir Data Exploration Vignette"
-subtitle: "RISE Presentation"
+title: "PurpleAir API Dashboard Vignette"
+subtitle: "A RISE Communities Program Presentation"
 author: "Stephen Colegate"
-date: "July 31, 2023"
+date: "August 9, 2024"
 format:
   html:
     output-file: "index.html"
@@ -18,9 +18,9 @@ number-depth: 3
 
 # Introduction {#sec-intro}
 
-Air quality sensors have the potential to provide high spatial and temporal resolution data and their accessibility in terms of cost and ease of use [@collier-oxandale2022]. Open access to environmental data sets and related tools is possible through a stable and consistent Application Programming Interface (API) that allows software and application developers to build applications to display and report that data in transparent and meaningful ways [@feenstra2020].
+Air quality sensors have the potential to provide high spatial and temporal resolution data and their accessibility in terms of cost and ease of use [@collier-oxandale2022]. Open access to environmental data sets and related tools is possible through a stable and consistent Application Programming Interface (API) [@AirSensor] that allows software and application developers to build applications to display and report that data in transparent and meaningful ways [@feenstra2020].
 
-In this document, we will present methods of accessing synoptic and time series data using R software with the `AirSensor` package from the PurpleAir API dashboard interface [@AirSensor]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
+In this document, we will present methods of accessing synoptic and time series data using R software with the `PurpleAir` package from the PurpleAir API dashboard interface [@brokamp]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
 
 ::: callout-note
 This rendered HTML of all the code and relevant output is hosted online on our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R/). All the R code in this vignette is contained in the `purpleair.R` file there. Instructions are provided in @sec-download to download this file directly from GitHub. As you follow along with this tutorial, try running all the available R code in the `purpleair.R` file to learn how to read in your PurpleAir data and do some basic data analysis with it.
@@ -52,7 +52,7 @@ Select New Directory from the message box. This brings up a list of various proj
 
 ![Click **New Project** to create a new R project.](Rproject2.png){fig-align="center" width="400"}
 
-On the next screen (shown below), enter in the name of the project (e.g. PurpleAir). Beneath the directory name, browse the location on your computer where to host the R project. This will create a subdirectory folder with the name of the project inside. All files created, saved, and loaded throughout this vignette will come from this folder.
+On the next screen (shown below), enter in the name of the project (e.g. `PurpleAir Demo`). Beneath the directory name, browse the location on your computer where to host the R project. This will create a subdirectory folder with the name of the project inside. All files created, saved, and loaded throughout this vignette will come from this folder.
 
 ![Type in the project name and select where to create the folder for the project.](Rproject3.png){fig-align="center" width="400"}
 
@@ -64,197 +64,189 @@ You can verify the R project you are currently in by looking for the project nam
 
 ### Download Files {#sec-download}
 
-After creating a new R project, download the necessary R files from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R/tree/main). First, download the `purpleair.R` file. Copy and paste the following line of code below into the console. To copy this code block, look for the clipboard icon located in the top-right corner of the code block and click Copy to Clipboard.
+After creating a new R project, download the necessary R files from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R/tree/main). First, download the `purpleair.R` file. Copy and paste the following line of code below into the console. To copy this code block, look for the clipboard icon located in the top-right corner of the code block and click **Copy to Clipboard**.
 
 ```{r purpleair.R}
+#| eval: false
+# Download 'purpleair.R' file from GitHub
 download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/purpleair.R", destfile = "purpleair.R")
 ```
 
 Inside RStudio, in the Console Pane, paste this code at the command prompt `>` and press **ENTER**. R should then go to our GitHub page, look for the `purpleair.R` file, and download the file into your R project folder. Verify the file has been downloaded by clicking on the **Files** tab in the Output Pane. Click on the `purpleair.R` file link inside the Files tab to open the R file inside RStudio. The `purpleair.R` file should now be included in the Source Pane.
 
-At the top of the R script, you should see code that downloads the `new_pas.R` and `new_pat.R` files from our [GitHub page](https://github.com/geomarker-io/purple_air_data_in_R/tree/main):
-
-```{r new_pas.R}
-# Download 'new_pas.R' file from GitHub
-download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pas.R", destfile = "new_pas.R")
-```
-
-Running this code should download the `new_pas.R` file into your R project folder. Similarly, running the following code should download the `new_pat.R` file into your R project folder. Download each of these files one at a time to ensure they are saved properly to the folder.
-
-```{r new_pat.R}
-# Download 'new_pat.R' file from GitHub
-download.file("https://raw.githubusercontent.com/geomarker-io/purple_air_data_in_R/main/new_pat.R", destfile = "new_pat.R")
-```
+::: callout-tip
+All the R functions that are given in this vignette are included in the `purpleair.R` file. Once you have the R file downloaded and opened in a RStudio session, you do not need to type in any more code, as all the code stated here is reproduced in `purpleair.R`. Simply highlight the code and execute it by clicking **Run** or use the `SHIFT`+`ENTER` keyboard shortcut.
+:::
 
 ### R Packages {#sec-packages}
 
-You will need to install the following packages in an R session in order to use the following code in this vignette:
-
--   [`dplyr`](https://cran.r-project.org/web/packages/dplyr/dplyr.pdf): a fast, consistent tool for working with data [@dplyr].
-
--   [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/ggplot2.pdf): a system for creating graphics [@ggplot2].
-
--   [`devtools`](https://www.r-project.org/nosvn/pandoc/devtools.html): a package that allows experienced R users to create and deploy R packages of their own [@devtools-2].
-
--   [`MazamaCoreUtils`](https://cran.r-project.org/web/packages/MazamaCoreUtils/MazamaCoreUtils.pdf): a suite of utility functions for working with AirSensor package [@MazamaCoreUtils].
-
--   [`AirSensor2`](https://github.com/MazamaScience/AirSensor2): package for processing and displaying data from PurpleAir based on the [AirSensor](https://mazamascience.github.io/AirSensor/) package [@AirSensor-2].
+You will need to install the `PurpleAir` package in order to use the functions that are provided later in this vignette. Packages are created by R users who bundle their functions, data, documentation, and other information that can then be shared and downloaded by other R users. R packages are stored on the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/) and require a internet connection to download. Learn more about the PurpleAir package by clicking [here](https://github.com/cole-brokamp/PurpleAir).
 
 ::: callout-caution
 Packages need to only be installed one time. After a package has been installed, there is no reason to install the package again unless there is an updated version for it.
 :::
 
-To install `dplyr`, `ggplot2`, and `devtools`, use the `install.packages()` function below.
+To install the `PurpleAir` package, use the `install.packages()` function below.
 
-```{r install_packages}
+```{r install_PurpleAir}
 #| eval: false
-# Install the following packages - only need to run once
-install.packages(c('dplyr', 'ggplot2', 'devtools'))
+# Install the PurpleAir package - only need to run once
+install.packages('PurpleAir')
 ```
 
 ::: callout-caution
 You may need to restart the R session in order for these packages to successfully install. If this is the case, select **Yes** when prompted to restart the R session. You may have to rerun the R code chunks again after restarting the session.
 :::
 
+![Downloading the `PurpleAir` R package to the User's Library.](install_package.png){fig-align="center" width="600"}
+
+When this line of code is executed, RStudio goes to the CRAN and looks for a package called `PurpleAir` and begins installing the package automatically in your Users Library. Click on the **Packages** tab in the Output Pane and locate the `PurpleAir` package (along with several other packages) that have been installed.
+
+![](packages_user.png){fig-align="center" width="500"}
+
 ::: callout-tip
-R already comes with its own packages (e.g., datasets, graphics, etc.). You do not need to install these packages, as they are already preinstalled when R is first installed. You can view all the R packages installed on your computer by clicking on the **Packages** tab in RStudio on the Output Pane.
+R already comes with its own packages (e.g., data sets, graphics, etc.). You do not need to install these packages, as they are already preinstalled when R is first installed. You can view all the R packages installed on your computer by clicking on the **Packages** tab in RStudio on the Output Pane.
 :::
 
-Next install the `MazamaCoreUtils` package:
-
-```{r MazamaCoreUtils}
-#| eval: false
-# Install the 'MazamaCoreUtils' package - only need to run once
-install.packages('MazamaCoreUtils')
-```
-
-::: callout-caution
-Some R packages (like `MazamaCoreUtils`) depend on other R packages in order to function properly. These extra dependencies will be installed automatically if they are not present in the users library.
-:::
-
-Unlike the other R packages above, the `AirSensor2` package is not publicly available on [CRAN](https://cran.r-project.org/) (as of this writing). However, the files needed to install the package can be downloaded from [GitHub](https://github.com/MazamaScience/AirSensor2). To do this, we use the `install_github()` function from the `devtools` package to point to the GitHub page:
-
-```{r install_AirSensor}
-#| eval: false
-# Install the 'AirSensor2' package - only need to run once
-devtools::install_github('mazamascience/AirSensor2')
-```
-
-When the above line is executed, a list of dependencies the `AirSensor2` package needs will be listed, and you will be asked to updated some or all of the packages. At the prompt, type `1` and press **ENTER** to update all the dependencies automatically.
-
-![When prompted with a list of packages to update, type `1` and press **ENTER**.](AirSensor2.png){fig-align="center" width="400"}
-
-::: callout-note
+::: callout-warning
 It can take several minutes for all the packages to download and install on your computer. Do not run any code or stop the process by clicking on the stop sign icon in the top right of the Console Pane. Doing so can cause problems with the installation.
 :::
 
-Once all the packages have been installed, you must then load each package into the R environment by using the function `library()`:
+Once the package has been installed, you must then load each package into the R environment by using the function `library()`:
 
-```{r load_packages}
+```{r load_PurpleAir}
 #| message: false
 #| warning: false
-# Load required R packages
-library(dplyr)
-library(ggplot2)
-library(AirSensor2)
+# Load the PurpleAir package
+library(PurpleAir)
 ```
 
 ::: callout-tip
 A package only needs to be loaded in once per R session. Reloading a package will have no effect. You can check whether a package is successfully loaded by clicking on the **Packages** tab in the Output Pane. You can also load a package by selecting the open box next to the package name, browse package information on CRAN, and delete the package altogether from this list.
 
-![List of Packages installed in the Output Pane. Loaded packages are indicated with a checkmark.](packages.png){fig-align="center" width="450"}
+![List of Packages installed in the Output Pane. Loaded packages are indicated with a check mark.](packages.png){fig-align="center" width="450"}
 
 Loading and unloading packages can be accomplished here by clicking on the check mark box.
 :::
 
-::: callout-warning
+::: callout-caution
 All open packages are unloaded when RStudio is closed or a new R session begins. Unlike the installation process where the packages are installed only once, you must load these packages every time you start a new R session. When you quit your R session and start a fresh session, you must reload the R packages again.
+:::
+
+Some R packages that will be useful are the `tidyverse` package and the `sf` package. Install these packages using the `install.packages()` function by specifying the names of these packages as a list, using the `c()` notation:
+
+```{r install_packages2}
+#| eval: false
+# Install the tidyverse and sf packages - only need to run once
+install.packages(c('tidyverse', 'sf'))
+```
+
+Once the package is installed, load these packages into the R environment using `library()`:
+
+```{r load_packages}
+#| message: false
+#| warning: false
+# Load required R packages
+library(tidyverse)
+library(sf)
+```
+
+::: callout-note
+Some R packages depend on items that are handled by other R packages in order to function properly. These extra dependencies will be installed automatically if they are not present in the User Library. For example, installing the `tidyverse` package will also install the following other packages: `dplyr`, `forcats`, `ggplot2`, `lubridate`, `purrr`, `readr`, `stringr`, `tibble`, and `tidyr`.
 :::
 
 ::: callout-caution
 Sometimes, R will print a warning message if a package that is loaded could conflict with another package that is already loaded, like the one shown below:
 
-![Function conflicts when loading the `dplyr` package.](conflict.png){fig-align="center" width="450"}
+![Function conflicts when loading the `tidyverse` package.](conflict.png){fig-align="center" width="650"}
 
-This scenario appears if, for example, functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default.
+This scenario appears if functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default. For example, the `filter()` function appears in both the `dplyr` package and the `stats` package. The `stats` package is loaded automatically when a new R session begins. When the `dplyr` package (a package that the `tidyverse` package depends on, or a *dependency*) is loaded into the session, this conflicts informs you that the `fitler()` function refers to the function in the `dplyr` package, not the `stats` package.
 :::
 
-# Synoptic (PAS) Data {#sec-synoptic}
+::: callout-tip
+You can refer to functions included with an R package without having to load the package itself. Use the `::` operator to refer to the package and the function with which you wish to use. From the previous caution box, `dplyr::filter()` refers to the `filter()` function in the `dplyr` package. This is handy if you require a specific function from a R package, but make sure you have the package installed first!
+:::
 
-**Synoptic data** provides a synopsis - a comprehensive view of something at a moment in time. Synoptic data takes a snapshot of data from all the PurpleAir sensors at a moment in time and uploads them to the cloud. **Spatial data** utilizes synoptic data to visualize data in different spacial locations (such as across the United States) at a given moment. Spatial data from PurpleAir sensors are stored on the cloud as **PurpleAir Synoptic (PAS)** data.
+# PurpleAir API Interface {#sec-API}
 
-This vignette demonstrates an example workflow for exploring air quality synoptic data using the AirSensor R package and data captured by the PurpleAir air quality sensors [@callahan_pas_2023]. Spatial data from PurpleAir will be downloaded from the PurpleAir API dashboard. We will then explore the spatial data by creating maps of air quality and temperature information.
-
-## Create PAS from PurpleAir {#sec-live}
-
-You can create a PAS object using the latest available PurpleAir sensor data from the PurpleAir website within your R environment. This method requires the user to create an account with PurpleAir and obtain an **Application Programming Interface (API)** key unique to the user to make specific queries.
+You can download the latest available PurpleAir sensor data from the PurpleAir website within your R environment. This method requires the user to create an account with PurpleAir and obtain an **Application Programming Interface (API)** key unique to the user to make specific queries.
 
 The [**PurpleAir API dashboard**](https://develop.purpleair.com/home) allows users to create and manage their API keys and their usage. The dashboard requires a [Gmail](https://support.google.com/mail/answer/56256?hl=en) or [Google-associated](https://support.google.com/accounts/answer/27441?hl=en) account to sign in. The instructions below follow the [tutorial](https://community.purpleair.com/t/new-api-online-dashboard/3981) provided by PurpleAir.
 
-### Create Project {#sec-createProject}
+::: callout-note
+You will be notified through your [Gmail](https://support.google.com/mail/answer/56256?hl=en) or [Google-associated](https://support.google.com/accounts/answer/27441?hl=en) account whenever you make on the PurpleAir API dashboard, such as creating a project, archiving a project, creating an API Key, and making a query.
+:::
+
+## Create Project {#sec-createProject}
 
 ![The PurpleAir API dashboard for creating projects.](purpleair_projects.png){fig-align="center"}
 
 First create a project by following these steps:
 
-1.  Sign in to [develop.purpleair.com](https://develop.purpleair.com/home) using a Gmail or Google-associated account.
+1.  Sign in to [develop.purpleair.com](https://develop.purpleair.com/home) using a [Gmail](https://support.google.com/mail/answer/56256?hl=en) or [Google-associated](https://support.google.com/accounts/answer/27441?hl=en) account.
 
-2.  Click **Projects** on the left-hand side of the page.
+2.  Click **Projects** along the top of the page.
 
-3.  Click on **Add** in the top right-hand corner of the page.
+3.  Click on **+Project** in the top right-hand corner of the page to add a new project.
 
     ![Creating a project in the PurpleAir API dashboard.](purpleair_addproject.png){fig-align="center" width="550"}
 
 4.  Enter in a project name.
 
-5.  You must allocate points to your new project. New users begin with 1 million free points that they can allocate to any project. When an API query is executed in R, points will be deducted from this allocation based on the type of data being requested. Additional points may be purchased on the PurpleAir website. More information about how points are allocated and used can be found [here](https://community.purpleair.com/t/api-pricing/4523).
+5.  Click **Create**.
 
-6.  Click **Add**.
+Once a project has been created, it is then added to the Projects list. You can also archive old projects once you are finished with a project. Archived projects are stored under the **Archived projects** tab.
 
-Once a project has been created, you can then create an API key for that project.
-
-### Obtain API Key {#sec-createAPI}
+## Obtain API Key {#sec-createAPI}
 
 ![List of active API Keys on the PurpleAir dashboard.](purpleair_apikey.png){fig-align="center"}
 
 To obtain your unique API key follow these steps:
 
-1.  Sign in to [develop.purpleair.com](https://develop.purpleair.com/home) using a Gmail or Google-associated account.
+1.  Sign in to [develop.purpleair.com](https://develop.purpleair.com/home) using a [Gmail](https://support.google.com/mail/answer/56256?hl=en) or [Google-associated](https://support.google.com/accounts/answer/27441?hl=en) account.
 
-2.  Click **API Keys** on the left-hand side of the page.
+2.  Click **API Keys** along the top of the page.
 
-3.  Click on **Add** in the top right-hand corner of the page.
+3.  Click on **+ API Key** in the top right-hand corner of the page.
 
-    ![](purpleair_createkey.png){width="450"}
+    ![](purpleair_createkey.png){width="287"}
 
-4.  You should see the auto-populated project name you created earlier (@sec-createProject). You can have several projects and API keys. Select the appropriate project if you have multiple projects.
+4.  A window appears on the right of the webpage. You should see the auto-populated project name you created earlier (@sec-createProject). You can have several projects and several API keys at a time. Select the appropriate project if you have multiple projects.
 
-5.  Select **Read** under "Type", select **Enabled** under "Status" , and leave all the other fields blank.
+5.  Select **Read** under "Choose key type", select **Enabled** under "Choose status" , and leave all the other fields blank.
 
-6.  Click **Add**.
+6.  Click **Create**.
 
-You should then see your unique API key for the project. You can modify the allocation of points and examine the usage of the API key and its allocated points at any time.
-
-![The unique PurpleAir API Key associated with your project.](purpleair_api.png){fig-align="center" width="800"}
+You should then see your unique API key for the project. You can associate multiple API keys to one project.
 
 ::: callout-warning
-API keys are issued per user, not per sensor. Make sure that you have allocated points to the project associated with the API key before continuing on.
+API keys are issued per user, not per sensor. Make sure that you have enough points allocated for the query before running the code. You do not want to waste points by running and downloading data that you may already have downloaded.
 :::
 
-### Set API Key {#sec-setAPI}
+## Set API Key {#sec-setAPI}
 
-The API Key is an access token that allows you to pull PurpleAir sensor data from the cloud into your R session environment (see @sec-createAPI to learn how to create API Keys). It is not ideal to leave your API Key in a R script. If you share any of these documents that include your personal API Key with someone else, when they request PurpleAir sensor data, they will be using your points! A better solution is to save your API Key in a separate file that you keep and then provide code in the R script you are working worth that then looks for the file with your API Key and reads in the key.
+The API Key is an access token that allows you to pull PurpleAir sensor data from the cloud into your R session environment (see @sec-createAPI to learn how to create API Keys). Each user begins with 1,000,000 points for free. Each time you tell R to fetch PurpleAir data from the PurpleAir API, points will be deducted from your account. The number of points that will be deducted depends on how much data that you request when you query the API. The more data that you request, the more points that you will use.
 
-In this example, suppose that the API Key for a given project is `YOUR_API_KEY` and the variable name to reference it is called `PurpleAir_API`.
+::: callout-warning
+You must have enough points in your account to be able to complete a query from the PurpleAir API. If you do not have enough points to complete the data query, an error message will appear in R stating that there's not enough points to complete the action. You can purchase additional points through the PurpleAir API interface dashboard online. Click the **Purchase Points** along the top-right of the webpage and follow the instructions to add additional points to your account. Different rates are available depending on the purchase price.
+
+![Purchasing and adding points to a PurpleAir API account.](api_pay.png){fig-align="center" width="1800"}
+:::
+
+It is not ideal to leave your API Key in a R script. If you share any of these documents that include your personal API Key with someone else, when they go to request PurpleAir sensor data, they will be using your points! A better solution is to save your API Key in a separate file that you keep private and then include code in the R script that will look for the private file and reads in your API Key from it.
+
+Follow these steps to setup a secure method of loading your API Key into your R environment:
 
 1.  Create a new R script by clicking on **File** \> **New File** \> **R Script**.
 
-2.  Copy the following R code below by clicking on the clipboard icon on the top right of the block. On the first line of this new blank R script, paste this one line of code. Replace the text `YOUR_API_KEY` with your unique PurpleAir API Key in quotes associated with the project. When the API Key is referenced within your R script, it will be called `PurpleAir_API`.
+2.  Copy the following R code below by clicking on the clipboard icon on the top right of the code block. On the first line of the new blank R script, paste this one line of code. Replace the text `PASTE_API_KEY_HERE` with your unique PurpleAir API Key in quotes associated with the project.
 
     ```{r API_KEY}
     #| eval: false
-    PurpleAir_API = "YOUR_API_KEY"
+    PURPLE_AIR_API_KEY = "PASTE_API_KEY_HERE"
     ```
+
+    Click on **API Keys** along the top of the webpage to list all your active API Keys. Under the API Key you wish to copy, click on **:** and then click **Copy Key** to copy the API Key to the clipboard. Paste the API Key in the new blank R script where the text `PASTE_API_KEY_HERE` is, ensuring that your API Key is in quotes. When the API Key is referenced within your R environment, it will be referenced as the variable `PURPLE_AIR_API_KEY`.
 
     ::: callout-caution
     Your PurpleAir API Key must be in single-quotes or double-quotes for this to work. API Keys are recognized in R as character strings. In RStudio, character strings are written in a forest green color to easily identify character strings.
@@ -266,394 +258,268 @@ In this example, suppose that the API Key for a given project is `YOUR_API_KEY` 
     Make sure you supply the `.R` file extension at the end of the file name when naming and saving the file. RStudio will **not** add this file extension on for you when you go to save the file. If you do not include the `.R` suffix, your computer may not recognize how to open the file.
     :::
 
-### Read PAS Data With API Key {#sec-createPAS}
+4.  Return to the `purpleair.R` file. Run the following code below to source the API Key from the `API_KEY.R` file:
 
-PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80 seconds prior to a May 31, 2019 firmware upgrade.) Data are processed by PurpleAir and a version of the data is displayed on the PurpleAir website.
+    ```{r source_API}
+    # Read the 'API_KEY.R' file containing your API Key
+    source("API_KEY.R")
+    ```
 
-The PAS object that will be pulled from PurpleAir is a large data frame with a record for each PurpleAir sensor channel (2 channels per sensor). There are several steps that must be accomplished before the PurpleAir dashboard can be utilized to bring in sensor data. The R script `new_pas.R` contains a function `new_pas()` that performs these background processes automatically. To load in the function, you must source the function from the `new_pas.R`, assuming it has already been downloaded to the R project folder (@sec-download).
+    If done correctly, R should read in the contents of the `API_KEY.R` file and pull in your API Key as a character string called `PURPLE_AIR_API_KEY`. Your API Key should be listed in the **Environment** tab in the Environment Pane.
 
-```{r load_new_pas}
-# Load in the new_pas() function from file
-source("new_pas.R")
-```
+5.  Once the API Key is brought in, set it by running the following line of code:
 
-::: callout-tip
-Before continuing, make sure you have created an API Key (@sec-createAPI) and saved it to a file (@sec-setAPI). The `new_pas()` will automatically search for the API Key in the R script provided by the `API_filename` option and sets the API Key each time `new_pas()` is called to create a PAS file. It is not required that the API Key be set prior to running this function.
+    ```{r}
+    # Set the API Key
+    Sys.setenv(PURPLE_AIR_API_KEY = PURPLE_AIR_API_KEY)
+    ```
+
+    The API Key should now be tied to your current R session. Verify that your API Key is valid by running the following code:
+
+    ```{r verify_API}
+    # Check that your API Key has been set correctly
+    check_api_key(PURPLE_AIR_API_KEY)
+    ```
+
+Click [here](https://community.purpleair.com/t/using-the-api-dashboard/3981) to learn more about how to use the API dashboard. Click [here](https://community.purpleair.com/t/about-the-purpleair-api/7145) to learn more about how to set up and use API Keys with the PurpleAir API dashboard.
+
+# PurpleAir Data Exploration {#sec-exploration}
+
+PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80 seconds prior to a May 31, 2019 firmware upgrade.) Data are processed by PurpleAir and a version of the data is displayed on the PurpleAir website. In this section, we will query the PurpleAir API to download sensor data into the R environment.
+
+::: callout-warning
+You must have a valid PurpleAir API Key in order to query PurpleAir sensor data from the PurpleAir API dashboard. The API Key must be validated before requesting PurpleAir data. Please read @sec-setAPI to set up a valid API Key. You must also have enough points in your account to query the PurpleAir API dashboard.
 :::
 
-The `new_pas()` function has several options available you can specify:
+## Single Sensor Data
 
--   `pas_filename`: Name of the PAS file (in quotes) that will be created.
+This exercise will pull the latest observations from a single PurpleAir sensor. In order to download data from a PurpleAir sensor, a specific sensor must first be identified. The `sensor_index` is a unique identifier of a PurpleAir sensor that can be obtained from the PurpleAir API dashboard. Learn more about how to obtain the `sensor_index` of a particular sensor by clicking [here](https://community.purpleair.com/t/sensor-indexes-and-read-keys/4000). The easiest way to identify the `sensor_index` of the PurpleAir sensor you wish to analyze is by using the [PurpleAir Real-Time Air Quality Map](https://map.purpleair.com/).
 
--   `API_filename`: The name of the file (in quotes) where the API Key is saved as the variable name `PurpleAir_API` (@sec-setAPI). In this vignette, the name of the file is `API_KEY.R`.
+![The [PurpleAir Real-Time Air Quality Map](https://map.purpleair.com/) showcasing all the latest data from PurpleAir sensors.](purpleair_map.png){fig-align="center"}
 
--   `countryCodes`: Identify the country to subset the sensor data from (in quotes); defaults to `"US"`.
+First locate a PurpleAir sensor you wish to analyze by going to where the sensor is located on the map. In this example, the PurpleAir sensor from the Cincinnati Fire Department Station #12 in located on [3001 Spring Grove Ave, Cincinnati, OH 45225](https://www.google.com/maps/place/Cincinnati+Fire+Department+Station+12/@39.1359167,-84.5434905,17z/data=!3m1!4b1!4m6!3m5!1s0x8841b4698703cc11:0x1cc8b1a092da8625!8m2!3d39.1359167!4d-84.5409156!16s%2Fg%2F11bwj92xv3!5m1!1e1?entry=ttu "Cincinnati Fire Department Station #12") in Camp Washington is identified.
 
--   `stateCodes`: Identify the U.S. state codes to subset the sensor data from (in quotes); defaults to `"OH"`.
+![The PurpleAir sensor from Cincinnati Fire Department Station #12 in Camp Washington.](cfd12.png){fig-align="center" width="600"}
 
--   `counties`: The US county names or 5-digit FIPS codes (in quotes), defaults to `"Hamilton"`.
+Click the icon of the reading from the sensor to examine both current and historical trends. Inside the pop-up box for the sensor, hover you mouse over **Get This Widget**. Inside the `id` field is the `sensor_index`, which is highlighted in the picture below.
 
--   `lookbackDays`: The number of days to look back to include only sensors with data more recent than specified; defaults to 7.
+![The `sensor_index` is listed in the `id` field under the **Get This Widget** icon.](sensor_index.png){fig-align="center" width="280"}
 
--   `location_type`: Whether outside (`0`), inside (`1`), or both (`NULL`) sensors are requested; defaults to `NULL`.
+From the image above, the `sensor_index` for the PurpleAir sensor at Station #12 is `176557`. Alternatively, hover your mouse over the **Get This Widget** icon and click **Download Data**. A new webpage should open. Check the URL of the webpage that just opened and the `sensor_index` should be listed at the tail-end of the URL.
 
-As an example, suppose we wish to create a PAS showcasing all (indoor and outdoor) PurpleAir sensor data within Hamilton County, Ohio from the past 7 days. The PAS will be created and saved in a file called `"PAS_Hamilton.rds"`. Here is how the `new_pas()` is used to achieve this:
+![The `sensor_index` is provided at the end of the URL that opens when you click **Download Data** under the **Get This Widget** icon.](sensor_index2.png){fig-align="center" width="500"}
 
-```{r new_pas}
+There are many fields that you can choose from when requesting data from PurpleAir. Click [here](https://api.purpleair.com/#api-sensors-get-sensor-data) to read the documentation on all the available information that you can query from each sensor. The `sensor_index` will be needed to identify a particular sensor when the PurpleAir API is queried. The `get_sensor_data()` function from the `PurpleAir` package can retrieve information from the PurpleAir API for a single sensor with a provided `sensor_index`. Inside the function, the `sensor_index` is specified for the specific sensor. The option `fields` is a list of variables that are requested from this sensor. The `fields` option is specified as a list (indicated by `c()`) where each variable name is a character string (i.e. in quotes) separated by commas.
+
+<!--# To prevent burning away PurpleAir points, the results that are obtained from each API request has been saved to .RData files. These data files are loaded back in and printed as if they were queried from the API. The code that does this is hidden from the reader so they are unaware of this workaround. -->
+
+```{r pull_data}
 #| eval: false
-# Create new PAS of Hamilton County, Ohio sensors from past 7 days
-pas <- new_pas(pas_filename = "PAS_Hamilton.rds", API_filename = "API_KEY.R",
-               countryCodes = "US", stateCodes = "OH", counties = "Hamilton",
-               lookbackDays = 7, location_type = NULL)
+# Get latest data from a single sensor
+sensor_data <- get_sensor_data(sensor_index = 176557,
+                               fields = c("name", "last_seen",
+                                          "pm2.5_cf_1", "pm2.5_atm"))
+sensor_data
 ```
 
-When this code is run, the following steps are performed in this order:
-
-1.  The necessary packages `here`, `AirSensor`, and `MazamaSpatialUtils` are loaded if they are not already. This is to ensure all necessary functions are recognized and the rest of the steps will work.
-
-2.  The function then checks if a PAS with `pas_filename` has already been created inside the root working directory `folder_location`. If the function finds the file, it is then loaded into the R environment. If the file does not exist, the function then asks the user whether they would like to create a new PAS using points associated with the API Key. Respond to the prompt by typing either `Y` (Yes) to continue with the steps (required if you have never created a PAS file) or `N` (No) to abort the process.
-
-    ::: callout-tip
-    If you run this function after creating a PAS file named `pas_filename`, it should detect that file and read it in automatically without calling on the PurpleAir dashboard and having to waste points recreating the PAS data.
-    :::
-
-3.  The function then sets the API Key. The function checks the project folder for the file `API_KEY.R`. If the API_KEY.R file has been created, it is read in and the variable `PurpleAir_API` is then set as the API Key. An error message displays if the function is unable to find the file with the API Key or set the API Key. If you changed your API Key, running this function will automatically update to the new API Key.
-
-    ::: callout-warning
-    You must create and set a valid API Key before you can read data from the PurpleAir dashboard. This involves creating a project with the PurpleAir dashboard and then saving the API Key to your computer as its own file (in this case, `API_KEY.R`). You do not need a new API Key each time a new PAS is created. For more information, see @sec-createAPI for creating API Keys and @sec-setAPI for saving and setting the API Key.
-    :::
-
-4.  The function next checks for various files containing spatial data on your computer. If you run `new_pas()` for the first time, the function goes online and downloads the necessary spatial data files and saves them in the project folder. This process is only done once - after which, the function simply checks to ensure those files are still present in that folder.
-
-5.  The spatial data files are then initialized and brought into the R environment. The initialization is process must occur before any new PAS objects are created.
-
-6.  After initialization, the function then proceeds to the PurpleAir dashboard and retrieves the sensor data from the cloud using the API Key. Points allocated with the PurpleAir API Key are then deducted. The data is then combined with the spatial data files to create the PAS object.
-
-    ::: callout-important
-    You must have enough points tied the API Key to complete the operation. The usage of your points varies depending on the query - click [here](https://community.purpleair.com/t/api-pricing/4523) for more details. If you do not have enough points, the operation will not be completed and an error message will be displayed. Click [here](https://api.purpleair.com/#api-keys-check-api-key) to learn more about the API Key and the data it can return. If you need to add more points, you can purchase more points to your account by clicking [here](https://community.purpleair.com/t/api-pricing/4523). Be very careful with how frequently you query the PurpleAir dashboard as you do not want to waste your points. Click [here](https://community.purpleair.com/t/api-use-guidelines/1589) to learn more about how you can optimize your points usage.
-    :::
-
-7.  The PAS object is then saved into a file named `pas_filename` in the `folder_location` folder on your computer. The next time that you run `new_pas()`, the function will check that the file is still present within the folder and load it back in.
-
-## Exploring PAS Data {#sec-PAS-explore}
-
-::: callout-note
-For this demonstration, we will be using the example PAS from the `AirSensor2` package. This example PAS was generated on May 3, 2023 for sensors located in Washington and Oregon:
-
-```{r pas_example}
-# Example PAS from AirSensor package
-pas <- AirSensor2::example_pas
-```
-
-For more information about the example PAS and how it was created, run the code below. This opens up a help documentation in the Output Pane:
-
-```{r pas_help}
-#| eval: false
-# Open help documentation for example PAS
-help(example_pas)
-```
-:::
-
-::: callout-caution
-All the following R code chunks can be adapted to your own PAS object you created in @sec-createPAS. You just need to be careful to specify the correct column and variable names. Once you work through this example PAS, you should try these commands with your own PAS files.
-:::
-
-Take a look at the first 10 rows of the PAS data frame:
-
-```{r pas_print}
-# Examine the first 10 rows
-print(pas, n=10, max_footer_lines=0)
-```
-
-There are `r nrow(pas)` columns and `r ncol(pas)` columns of the data frame. Not every column and row is displayed here. Each row of the PAS object corresponds to a unique PurpleAir sensor, identified by the `deviceDeploymentID` column, at this one moment in time. Each sensor records several columns of data, which we can take a look at below:
-
-```{r pas_col}
-# Get list of column names
-names(pas)
-```
-
-At a glance, the PAS has several useful columns of data we can explore. There are column recordings of temperature, relative humidity, pressure, and air quality. We are interested in PM~2.5~ (particulate matter smaller than 2.5 micrometers in diameter). There are 6 columns related to PM~2.5~ measurements. These are average PM~2.5~ measurements taken by the sensor for a certain period of time. Notice how each column starts with the prefix `pm2.5`.
-
-We can pull only those columns that begin with this prefix and store them as a new R object. Each row corresponds to one sensor so it is also a good idea to include the `locationID` of each sensor with our new `pm25` object. The code below takes the pas R object and then uses the `select()` function to choose `locationID` that starts with `pm2.5_` as the variable name (notice the use of quotes here!). The `%>%` operator is called a pipeline operator that is available in the `dplyr` package (and others) which can accomplish this process in one execution.
-
-::: callout-caution
-The variable names of the PAS file you use may change depending on where you source your data from. Make sure you adapt the variable names such as `locationID` and `pm2.5_` exactly (case-sensitive, spelling, punctuation) so they match exactly as they are specified in your PAS data frame.
-:::
-
-```{r pm25}
-# Take a look at only PM2.5 data
-pm25 <- pas %>%
-  select(locationID, starts_with("pm2.5_"))
-print(pm25, n=10)
-```
-
-Each row of this new `pm25_data` object corresponds to one PurpleAir sensor at a given location. Now that we have our PM~2.5~ data setup, we can now create maps to explore PM~2.5~ observations by location.
-
-<!--# As of a recent 'knitr' update version 1.43, the leaflets are not rendering correctly in the HMTL output Quarto renders. There is a 'eval' option to turn off the leaflets if they do not display correctly or a ERROR message results when rendering the HTML output. To get them to render correctly, you must downgrade 'knitr' to version 1.42, shown below: -->
-
-```{r knitr_down}
-#| eval: false
+```{r pull_data2}
 #| echo: false
-# Remove latest version of 'knitr' package (if upgraded past 1.42)
-remove.packages(knitr)
-
-# Install 'knitr' package version 1.42
-require(devtools)
-install_version("knitr", version = 1.42)
+# Read in the result that should be obtained from the API
+sensor_data <- readRDS(file="sensor_data.RDS")
+sensor_data
 ```
 
-Display a map of the 1-hour average PM~2.5~ measurement for each sensor:
+When this code is executed, points are deducted from your API account to retrieve the requested data and then stored in an R data object called `sensor`. The information that is returned is given by what was listed in the `fields` option. In this specific example, the following items are returned:
 
-```{r leaflet_pm25}
-#| eval: true
-# Plot interactive leaflet map of 1-hour average PM2.5
-pas %>%
-  pas_leaflet(parameter = "pm2.5_60minute")
-```
+-   `"name"`: Identifies the name of the sensor with `sensor_index` of 175413.
 
-A map is shown of all the sensors with their 1 hour average PM~2.5~ measurements. The icons represent one scanner, colored based on their measurement. Clicking on one of the icons brings up the device's ID, sensor index, location, temperature, humidity, and average PM~2.5~ measurements over a 1-hour and 24-hour period.
+-   `"last_seen"`: Indicates the timestamp of the latest available information that the PurpleAir API has of this particular sensor.
+
+-   `"pm2.5_cf_1"`: The recorded PM~2.5~ observation using the CF=1 formula.
+
+-   `"pm2.5_atm"`: The recorded PM~2.5~ observation using the CF=ATM formula. To learn more about the difference between the CF=1 and CF=ATM formulas, click [here](https://community.purpleair.com/t/what-is-the-difference-between-cf-1-atm-and-alt/6442).
+
+::: callout-tip
+Consult [this website](https://api.purpleair.com/#api-sensors-get-sensor-data) to look at other fields that you can specify and retrieve. Some of the fields that you can specify include PM~1.0~, PM~10~, PM~2.5~, temperature, humidity, atmospheric pressure, O~3~ (ozone) and VOC concentration. Just make sure to include the name of the field you want in the list in quotes.
+:::
 
 ::: callout-note
-Take notice of the `sensor_index` that is displayed for each sensor. You will need a `sensor_index` to create a PAT file later in @sec-pat.
+By default, the PurpleAir R package retries failed API requests related to an underlying HTTP error (for example, the network or website is down) or a transient API error (i.e., 429, 503). Before retrying each failed request, the PurpleAir package will wait approximately two seconds before trying the request again. Successive failed requests result in exponentially longer waiting times (set using the function `httr2::req_retry()`). It is possible to specify the maximum number of seconds to wait (by default 45) with the environment variable `PURPLE_AIR_API_RETRY_MAX_TIME`.
 :::
 
-PAS data can consist of quite a number of sensors, resulting in many icons to select from in the map. We may wish to filter sensors based on their readings so that only those sensors who meet our filtering criteria appear on the map. This is useful, for example, if we are interested in identifying locations with high PM~2.5~ concentrations. The `pas_filter()` function can be used to filter sensors by state (with `stateCode`) and by a filtering criterion before it is passed to the `pas_leaflet()` function. In the example below, we identify sensors who register at least a 24-hour PM~2.5~ average of 12.0 micrograms per cubic meter - the equivalent of registering a Moderate [Air Quality Index (AQI)](https://www.epa.gov/sites/default/files/2016-04/documents/2012_aqi_factsheet.pdf):
+## Multiple Sensor Data
 
-```{r leaflet_filter}
-#| eval: true
-# Filter sensors with moderate air quality
-pas %>%
-  pas_filter(pm2.5_24hour > 12.0) %>%
-  pas_leaflet(parameter = "pm2.5_24hour")
-```
+A list in R is specified with `c()`, with elements separated by commas. In the previous R code, all the variables that we wish to retrieve were in quotes separated by commas inside `c()` for the `fields` option within the `get_sensor_data()` function. A list can be passed within the `get_sensors_data()` function to retrieve data from multiple PurpleAir sensors.
 
-The PurpleAir sensors not only record PM~2.5~ data but they also record temperature and relative humidity as well. The following example displays the (high) temperature reading of all these sensors that are not missing:
-
-```{r leaflet_temperature}
-#| eval: true
-# Plot interactive map of temperature, removing missing data
-pas %>%
-  pas_filter(!is.na(temperature)) %>%
-  pas_leaflet(parameter = "temperature")
-```
-
-The `sensor_index` identifies the unique PurpleAir sensor. When clicking on the icons inside the interactive map, the `sensor_index` of each sensor is displayed. The `pas_filter()` function can filter all rows of the PAS specifically tailored to a `sensor_index`. Combined with the `pas_leaflet()` function, a map is displayed showing where the PurpleAir sensor that has the unique `sensor_index` identifier.
-
-```{r sensor_index}
-# Identify the location of a single sensor
-pas %>%
-  pas_filter(sensor_index==76545) %>%
-  pas_leaflet()
-```
-
-This displays a map showing where sensor with `sensor_index = 76545` is located (Gathard Engineering in Seattle, WA).
-
-::: callout-tip
-The PAS file can easily identify the unique `sensor_index` of a particular PurpleAir sensor you wish to analyze further. As you explore the interactive map, make a note of which `sensor_index` you would like to study. This will be referenced in @sec-pat with the `new_pat()` function. In the next section, we will reference this same PurpleAir sensor (`sensor_index = 76545`) in the example PAT file (see @sec-PAT-explore).
+::: callout-caution
+Note that `get_sensor_data()` and `get_sensors_data()` are two different functions (notice the `s` on the word `sensor` on the latter function). The `get_sensor_data()` retrieves information only from a single sensor, while the `get_sensors_data()` retrieves information from multiple sensors. Be aware of the function that is specified, as there are different options that are available between the functions.
 :::
 
-# Time Series (PAT) Data {#sec-timeseries}
+Specify the `sensor_index` in the option `x` as a list, like in the example below:
 
-**Time series** data provides a minute-by-minute database structure for transforming and analyzing [PurpleAir](https://www.purpleair.com/) sensor data. Unlike spatial data, which is geared for analyzing multiple sensors at one point in time, time series data focuses on a single PurpleAir sensor over time. In this manner, time series data allows the user to examine trends in air quality, temperature, and relative humidity recorded by one sensor.
-
-## Create PAT from PurpleAir {#sec-pat}
-
-PurpleAir sensor readings are uploaded to the cloud every 120 seconds where they are stored for download and display on the PurpleAir website. After every interval, the synoptic data is refreshed and the outdated synoptic data is then stored in a [ThingSpeak](https://thingspeak.com) database.
-
-In order to access the ThingSpeak channel API we must first load the synoptic database object (PAS), which was discussed in @sec-createPAS. Once the PAS data frame has been loaded, we then create a **PurpleAir Time Series (PAT)** object by specifying the sensor and the dates from which to pull data from. Since this requires drawing data from the PurpleAir API dashboard, an API key (@sec-setAPI) is required to access this data to create the PAT object.
-
-Just like the `new_pas.R` script in @sec-createPAS, the R script `new_pat.R` contains a function `new_pat()` that performs the process of creating a PAT data frame automatically. To load in the function, you must source the function from the `new_pat.R`, assuming it has been downloaded to the project folder (@sec-download).
-
-```{r load_new_pat}
-# Load in the new_pat() function from file
-source("new_pat.R")
-```
-
-::: callout-warning
-**A PAS file is required to create a PAT file.** Make sure you have created an PAS file @sec-createPAS and have a API Key (@sec-createAPI) saved to a file (@sec-setAPI). The `new_pat()` will check for the PAS file and if it does not detect a PAS file, the function will ask you to create a PAS file first using the `new_pas()` function. The `new_pat()` function also requires that a vaild API Key has been set. The function automatically search for the API Key in the R script `API_KEY.R` and sets the API Key for you. It is not required that the API Key be set prior to running this function.
-:::
-
-PAT files put emphasis on a single PurpleAir sensor. Each sensor comes with its own unique identifier. In the PAS file, this identifier is called the `sensor_index`. All measurements taken by a scanner will be authored by the `sensor_index`. If one is only interested in the measurements of a particular scanner, the PAT file can pull information from the PurpleAir dashboard for that scanner over time.
-
-::: callout-tip
-It is highly recommended that you select only one sensor from the PAS file you would like to examine over time. It is possible to create PAT files for more than one sensor, however, it is more convenient to have one PAT file represent just one PurpleAir sensor. This creates PAT files of manageable size for portability. Lots of information is collected from a single sensor and file sizes can become large if multiple sensors or multiple periods are requested. You can always read in multiple PAT files and combine them later if needed.
-:::
-
-The first step in creating the PAT file is to identify the sensor to record measurements from. In this example, the PurpleAir sensor we will study is located at Cincinnati's Fire Department Station 12, located at 3001 Spring Grove Ave, Cincinnati, OH 45225. Their PurpleAir sensor has `sensor_index = 176557`.
-
-::: callout-tip
-One easy way of identifying the `sensor_index` of the PurpleAir sensor you want is to use the [online PurpleAir map](https://map.purpleair.com/1/mAQI/a10/p604800/cC0?select=176557#12.87/39.12646/-84.53578). Use this map to locate the sensor you wish to study and click on its icon. Hover your cursor over the text **Get This Widget**, revealing a pop-up window that contains the `sensor_index`.
-
-![The `sensor_index` is usually shown in the `id` field of the widget on the [PurpleAir map](https://map.purpleair.com/1/mAQI/a10/p604800/cC0?select=176557#12.87/39.12646/-84.53578).](purpleair_map.png){fig-align="center" width="350"}
-
-A sure-fire way to identify a particular scanner and determine its `sensor_index` is to create a map of all the scanners inside the PAS data using `pas_leaflet()` to plot them (@sec-PAS-explore). You can then use the map to find the scanner you wish to analyze. Clicking on the icon of the scanner on the map will display information about the scanner, including its `sensor_index`.
-:::
-
-From this scanner in the PAS file `PAS_Hamilton.rds` that was created in @sec-createPAS, we wish to create a PAT file showcasing all PurpleAir sensor data from this sensor (`sensor_index = 176557`) from July 1, 2023 to July 8, 2023. The PAT will be created and saved in a file called `"July_CFD12.rds"`. Here is how the `new_pat()` is used to achieve this:
-
-```{r new_pat}
+```{r pull_multiple}
 #| eval: false
-# Create new PAT of one sensor from July 1 through July 8
-pat <- new_pat(pat_filename = "July_CFD12.rds", pas_filename = "PAS_Hamilton.rds",
-               API_filename = "API_KEY.R", sensor_index = 176557,
-               start_date = "2023-07-01", end_date = "2023-07-08")
+# Get latest data from multiple sensors
+multiple_data <- get_sensors_data(x = c(176557, 184705, 177011),
+                                  fields = c("name", "last_seen",
+                                             "pm2.5_cf_1", "pm2.5_atm"))
+multiple_data
 ```
 
-The `new_pat()` function has several options available you can specify:
-
--   `pat_filename`: Name of the PAT file (in quotes) that will be created.
-
--   `pas_filename`: Name of the PAS file (in quotes) that will be used to identify the sensor_index. A PAS file must be created before creating a PAT file. See @sec-createPAS for details.
-
--   `API_filename`: The name of the file (in quotes) where the API Key is saved as the variable name `PurpleAir_API` (@sec-setAPI).
-
--   `sensor_index`: The unique number indicator of the PurpleAir sensor you wish to analyze.
-
--   `start_date`: The start date to start reading data (in quotes), formatted as `"YYYY-MM-DD"`.
-
--   `end_date`: The end date to stop reading data (in quotes), formatted as `"YYYY-MM-DD"`.
-
--   `time_zone`: The Olson timezone used to interpret dates (in quotes); default is UTC.
-
--   `average`: Temporal averaging in minutes performed by PurpleAir; default is 0, meaning all data recorded by the sensor is instant. Values include 10, 30, 60 (hour), 360, 1440 (day).
-
-When this code is run, the following steps are performed in this order:
-
-1.  The necessary packages `here`, `AirSensor`, and `MazamaSpatialUtils` are loaded if they are not already. This is to ensure all necessary functions are recognized and the rest of the steps will work.
-
-2.  The function then checks if a PAT with `pat_filename` has already been created. If the function finds the file, it is then loaded into the R environment. If the file does not exist, the function then asks the user whether they would like to create a new PAT using points associated with the API Key. Respond to the prompt by typing either `Y` (Yes) to continue with the steps (required if you have never created a PAT file) or `N` (No) to abort the process.
-
-    ::: callout-tip
-    If you run this function after creating a PAT file named `pas_filename`, it should detect that file and read it in automatically without calling on the PurpleAir dashboard and having to waste points recreating the PAT file.
-    :::
-
-3.  The function then sets the API Key by checking the R project folder for the file `API_KEY.R`. If the function finds it, then the file is sourced in and the variable `PurpleAir_API` is then set as the API Key. An error message displays if the function is unable to find the file with the API Key or set the API Key. If you changed your API Key within the `API_KEY.R` file, `new_pat()` will automatically update the API Key for you.
-
-    ::: callout-warning
-    You must create and set a valid API Key before you can read data from the PurpleAir dashboard. This involves creating a project with the PurpleAir dashboard and then saving the API Key to your computer as its own file (in this case, `API_KEY.R`). The API Key is unique and is tied to the user, not the project. You do not need a new API Key each time a new PAT is created. For more information, see @sec-createAPI for creating API Keys and @sec-setAPI for saving and setting the API Key.
-    :::
-
-4.  The function next checks that the required PAS file exists. If the file does not exist, the user is asked to run `new_pas()` function to create one first.
-
-    ::: callout-tip
-    If you used `new_pas()` in @sec-createPAS, then the PAS file should already exist and the `new_pat()` function should automatically read it in for you.
-    :::
-
-5.  The function then proceeds to the PurpleAir dashboard and retrieves all the data from the sensor from the cloud between the `start_date` and `end_date` using the API Key and the PAS file. Points allocated with the PurpleAir API Key are then deducted. The data is then combined with the spatial data files to create the PAS object.
-
-    ::: callout-important
-    You must have enough points tied the API Key to complete the operation. The usage of your points varies depending on the query - click [here](https://community.purpleair.com/t/api-pricing/4523) for more details. If you do not have enough points, the operation will not be completed and an error message will be displayed. Click [here](https://api.purpleair.com/#api-keys-check-api-key) to learn more about the API Key and the data it can return. If you need to add more points, you can purchase more points to your account by clicking [here](https://community.purpleair.com/t/api-pricing/4523). Be very careful with how frequently you query the PurpleAir dashboard as you do not want to waste your points. Click [here](https://community.purpleair.com/t/api-use-guidelines/1589) to learn more about how you can optimize your points usage.
-    :::
-
-6.  The PAT object is then saved into a file named `pat_filename` in the R project folder on your computer. The next time that you run `new_pat()`, the function will check that the file is still present within that folder and load it for you.
-
-## Exploring PAT Data {#sec-PAT-explore}
-
-::: callout-note
-All the following R code chunks can be adapted to your own PAT object you create (@sec-pat). For this demonstration, we will be using the example PAT from the AirSensor package to avoid long waiting times. The example PAT was generated for a specific sensor with `sensor_index=76545` in Seattle, Washington between January 1, 2023 and January 2, 2023:
-
-```{r pat_example}
-# Example PAT from AirSensor package
-pat <- AirSensor2::example_pat
+```{r pull_multiple2}
+#| echo: false
+# Read in the result that should be obtained from the API
+multiple_data <- readRDS(file="multiple_data.RDS")
+multiple_data
 ```
 
-For more information about the example PAT, run the code below. This opens up a help documentation describing how this PAT is generated:
+In the above example, the latest sensor data of `"name"`, `"last_seen"`, `"pm2.5_cf_1"` and `"pm2.5_atm"` will be retrieved for the following PurpleAir sensors:
 
-```{r pat_help}
+-   `176557`: The Cincinnati Fire Department Station #12 sensor at [3001 Spring Grove Ave, Cincinnati, OH 45225](https://www.google.com/maps/place/Cincinnati+Fire+Department+Station+12/@39.1359167,-84.5434905,17z/data=!3m1!4b1!4m6!3m5!1s0x8841b4698703cc11:0x1cc8b1a092da8625!8m2!3d39.1359167!4d-84.5409156!16s%2Fg%2F11bwj92xv3!5m1!1e1?entry=ttu "Cincinnati Fire Department Station #12") in Camp Washington, Ohio.
+
+-   `184705`: The Cincinnati Zoo sensor at [3400 Vine St, Cincinnati, OH 45220](https://www.google.com/maps/place/Cincinnati+Zoo+%26+Botanical+Garden/@39.1441388,-84.5103459,17z/data=!3m1!4b1!4m6!3m5!1s0x8841b39afdef07ed:0x8b070207c0a45d49!8m2!3d39.1441388!4d-84.5084898!16zL20vMDE1ZjBw!5m1!1e1?entry=ttu "Cincinnati Zoo") in Clifton, Ohio.
+
+-   `177011`: Trinity Episcopal Church at [326 Madison Ave, Covington, KY 41011](https://www.google.com/maps/place/Trinity+Episcopal+Church/@39.0874464,-84.5155709,16z/data=!3m1!4b1!4m6!3m5!1s0x8841b1380e79bca7:0xec0afa805fa4cc0c!8m2!3d39.0874465!4d-84.5107!16s%2Fm%2F02qfjxm!5m1!1e1?entry=ttu "Trinity Episcopal Church") in Covington, Kentucky.
+
+## Sensors in a Specified Area
+
+In the previous section, the `sensor_index` of every sensor must be specified as a list. It is also possible to simply specify a area on a map and retrieve the available sensor information from that area. A *boundary box* is a rectangular box that is drawn on a map, defined by latitude and longitude coordinate pairs of its four corners. The idea is to go to the area of interest on the map, draw the boundary box that covers the desired area, and identify the minimum and maximum latitude and longitude coordinates that make up the boundary box. A free tool that can help identify the coordinates of a boundary box on a map is [OpenStreetMap](https://www.openstreetmap.org/).
+
+1.  Go to the [OpenStreetMap](https://www.openstreetmap.org/) website and zoom in to the area of interest on the map. In this example, we will examine the area north of Downtown Cincinnati, including Over-the-Rhine, the West End, Mount Auburn, Mount Adams and Pendleton.
+
+2.  Click on **Export** at the top of the webpage. A pane opens on the left side of the screen, indicating the coordinates of the boundary box that covers the entire view that is currently visible on the webpage.
+
+3.  Click on **Manually select a different area** to bring up a boundary box on-screen.
+
+4.  Adjust the boundary box on-screen by clicking and dragging the four corners of the box so that it completely covers the area of interest.
+
+    ![A boundary box drawn north of Cincinnati, Ohio in [OpenStreetMap](https://www.openstreetmap.org/).](OpenStreetMap.png)
+
+5.  The four numbers on the left panel under **Export** identify the four coordinates that are needed to define the boundary box:
+
+    -   `xmin`: The left number.
+
+    -   `xmax`: The right number.
+
+    -   `ymin`: The bottom number.
+
+    -   `ymax`: The top number.
+
+A function in the `sf` package, `st_bbox()`, identifies how the boundary box will be drawn. Highlight the corresponding coordinates from the [OpenStreetMap](https://www.openstreetmap.org/) website and paste them as a list, specifying the coordinate, as in the example below:
+
+```{r pull_area}
 #| eval: false
-# Open help documentation for example PAT
-help(example_pat)
+# Get sensor information from a boundary box
+boundary_data <- sf::st_bbox(c("xmin" = -84.5320, "ymin" = 39.0978,
+                               "xmax" = -84.5003, "ymax" = 39.1181),
+                             crs = 4326) |>
+  get_sensors_data(fields = c("name", "last_seen",
+                              "pm2.5_cf_1", "pm2.5_atm"))
+boundary_data
 ```
+
+```{r pull_area2}
+#| echo: false
+# Read in the result that should be obtained from the API
+boundary_data <- readRDS(file="boundary_data.RDS")
+boundary_data
+```
+
+The `crs=4326` option inside the `st_bbox()` indicates the coordinate system is a grid of latitude and longitude pairs. Once the boundary box has been defined, this information is then passed on to the `get_sensors_data()` function (using the `|>` operator) and then retrieves all the sensor data within that boundary box for the `fields` specified.
+
+## Historical Sensor Data
+
+The PurpleAir API dashboard collects and stores all the information reported from these PurpleAir sensors into the cloud. So far, we have been querying selected data from specified sensor data using the latest information that is available. It is also possible to pull historical data from these sensors to examine patterns or trends being recorded over time.
+
+Let's return to the PurpleAir sensor at the Cincinnati Fire Department Station #12, whose `sensor_index` is 176557. It would be interesting to see air pollution readings over the 4th of July weekend, where people are celebrating Independence Day by setting off fireworks. The `get_sensor_history()` function in the `PurpleAir` package can return all the various observations that were recorded from a specified sensor between two time stamps. Since the PurpleAir sensors makes frequent measurements, it is wise to save this (very large) information as a data object called `sensor_history` so that multiple large API calls are made.
+
+```{r pull_history}
+#| eval: false
+# Get historical data from a sensor from July 3-6, 2024
+sensor_history <- get_sensor_history(sensor_index = 176557,
+                                     fields = c("pm1.0_cf_1", "pm1.0_atm",
+                                                "pm2.5_cf_1", "pm2.5_atm"),
+                                     start_timestamp = as.POSIXct("2024-07-03"),
+                                     end_timestamp = as.POSIXct("2024-07-06") )
+sensor_history
+```
+
+```{r pull_history2}
+#| echo: false
+# Read in the result that should be obtained from the API
+sensor_history <- readRDS(file="sensor_history.RDS")
+sensor_history
+```
+
+The `sensor_index` is specified in the `get_sensor_history()` function that acknowledges the specific sensor, and the `fields` option returns the given information to be returned. The `start_timestamp` and `end_timestamp` options specify the start and end time stamps of historical data to be viewed. The function `as.POSIXct()` converts the special character string as a calendar date. The usual format for date character strings are the four-digit year, two-digit month, and two-digit date, separated by hyphens. All times begin at midnight UTC on the date specified by default, but it is also possible to include the hour, minute and second as well if only certain time periods are desired.
+
+All the historical data from this sensor is stored as a data object called `sensor_history`. By typing in the name of this object and running it inside R, we can see the first several rows of the data object. This data can be used to do analysis and to create plots. For example, using the historical data from `sensor_history`, a time-series plot of PM~2.5~ can be created to see how PM~2.5~ values fluctuated over the course of the Fourth of July period at this location:
+
+```{r sensor_plot}
+#| fig-align: 'center'
+#| fig-width: 8
+# Get a time-series plot of sensor readings
+sensor_history |>
+  tidyr::pivot_longer(cols = tidyr::starts_with("pm"),
+                      names_to = "pollutant", values_to = "concentration") |>
+  ggplot2::ggplot(ggplot2::aes(time_stamp, concentration, color = pollutant)) +
+  ggplot2::geom_line()
+```
+
+Here's a summary of what the above code does, in this order:
+
+1.  The `pivot_longer()` function from the `tidyr` package reorganizes the `sensor_history` data to accommodate the plotting functions. The `cols` option takes all the columns that `start_with()` the characters `pm` (`pm1.0_cf_1`, `pm1.0_atm`, `pm2.5_atm`, and `pm2.5_cf_1`) and creates four groupings, the name of each group is the column name. A new column `pollutant` is created that identifies the pollutant group, which is one of the four provided. The value of that pollutant is given as another column `concentraton`. The reorganization is done so that each row identifies a concentration of one of the four PM pollutants.
+2.  The `ggplot()` function from the `ggplot2` package takes the reorganized data from Step 1 and creates the time series plot. The `aes()` specifies what goes on the x-axis (`time_stamp` - the time the observation was made), the y-axis (`concentration` - the PM concentration observed) and how four lines are colored (`color=pollutant` indicates which pollutant the observed concentration belongs to).
+3.  The `geom_line()` from the `ggplot2()` package takes the information specified in Step 2 and draws the time series plot as lines. Since there are four pollutants provided in the `pollutant` column (as indicated by the `color` option), there will be four lines drawn.
+
+## Saving and Loading Data
+
+Each time the PurpleAir API dashboard is requested, points are spent to download the data. For the duration of the R session, the data objects `sensor_data`, `multiple_data`, `boundary_data`, and `sensor_history` include information from the PurpleAir API dashboard. When you quit RStudio, any packages that are loaded become unloaded, any results that are not saved are erased, and all variables and data objects within the R environment get deleted. This becomes a problem, since restarting R will require the PurpleAir API dashboard to be called again to get back these data objects. Having to redownload data that you have already queried is not practical since this will use up a lot of points on your PurpleAir account.
+
+A solution to this problem is to save each data object as a `.RDS` file. The `.RDS` (*R Data Serialization*) file format is just one of many popular data formats to save and read in data files. The function `saveRDS()` saves a data object into a `.RDS` file. The corresponding function `readRDS()` function reads a `.RDS` file into the R environment. The file path to the `.RDS` file can be specified in both functions, where at least the name of the `.RDS` file given to locate the correct file. By default, the `.RDS` files are saved in the same directory as the project folder.
+
+The following code saves each of the `sensor_data`, `multiple_data`, `boundary_data` and `sensor_history` data objects into `.RDS` files with corresponding names:
+
+```{r save_rds}
+#| eval: false
+# Save each data object for analysis later
+saveRDS(sensor_data, file="sensor_data.RDS")
+saveRDS(multiple_data, file="multiple_data.RDS")
+saveRDS(boundary_data, file="boundary_data.RDS")
+saveRDS(sensor_history, file="sensor_history.RDS")
+```
+
+::: callout-tip
+Include a different file path aside from the current working directory if you wish to save these files in a different location on your computer. Just remember to use this same file path in the `readRDS()` function as the `saveRDS()` function.
+:::
+
+Check the working folder directory on your computer to find that four new `.RDS` files have been created inside the folder. The data that have been requested from the PurpleAir API dashboard are now safely saved onto your computer for later. At this point, it is save to quit out of RStudio and end the R session without losing the data files. When RStudio is opened and a new R session begins, the data objects can be reloaded back into the R environment by reading in the `.RDS` files. Use the `readRDS()` function to read back in the PurpleAir sensor data in a new R session:
+
+```{r read_rds}
+# Load each data object after a new R session
+sensor_data <- readRDS(file="sensor_data.RDS")
+multiple_data <- readRDS(file="multiple_data.RDS")
+boundary_data <- readRDS(file="boundary_data.RDS")
+sensor_history <- readRDS(file="sensor_history.RDS")
+```
+
+::: callout-tip
+This method is very convenient whenever you need to quit out of RStudio and analyze the data later, since only the above code needs to be run to load the previous sensor data. This prevents having to call the PurpleAir API dashboard each time a new R session begins, saving precious points and time.
 :::
 
 ::: callout-caution
-All the following R code chunks can be adapted to your own PAT object you created in @sec-createPAS. You just need to be careful to specify the correct column and variable names. Once you work through this example PAT, you should try these commands with your own PAT files.
+Make sure that the file path specified in the `readRDS()` function is correctly specified. If the location of the `.RDS` file(s) changes, the file path must be updated to reflect the new location. Otherwise, R will be unable to locate the `.RDS` file(s).
 :::
 
-The PAT object contains two data frames:
+# Conclusions
 
--   `meta` - Includes one row of data that does not change over time (e.g., device location, latitude, longitude, state, county, etc.)
-
-    ```{r pat_meta}
-    # Variables that do not change with time
-    names(pat$meta)
-    ```
-
--   `data` - Includes time series data that changes with time. Each row corresponds to a snapshot of data taken from sensor_index 3515 at a certain time (in UTC) and date.
-
-    ```{r pat_data}
-    # Examine time series data
-    print(pat$data, n=10)
-    ```
-
-As you can see, the PurpleAir sensor takes frequent measurements of temperature, humidity, and air quality. As the PAT object shows, these measurements change over time. We can take a look at trends for all these measurements by plotting the time series for each variable.
-
-Let's explore the data contained within the PAT object:
-
-```{r pat_names}
-# Pull time series data from PAT
-pat_data <- pat$data
-names(pat_data)
-```
-
-There are several variables of interest: `humidity`, `temperature`, and `pressure`. Let's start by analyzing the temperature measurements from this PurpleAir sensor by creating a time series plot using `ggplot()` (comes from the `ggplot2` package):
-
-```{r pat_temperature}
-# Plot time series of temperature
-pat_data %>%
-  ggplot()+
-  geom_line(aes(x=datetime, y=temperature), color="orange", lwd=1.0)+
-  theme_bw()+
-  xlab("Time")+
-  ylab("Temperature")+
-  ggtitle("PurpleAir Time Series Plot of Temperature")
-```
-
-The orange line appears because of the `geom_line()` statement. The x coordinate is the time variable `datetime` while the y coordinate is the variable of interest `temperature`. You can supply additional `ggplot()` functions as lines to customize the plot. In this example, `xlab()` adds a label for the x-axis, `ylab()` adds a label for the y-axis, and `ggtitle()` adds a title to the plot. The `theme_bw()` applies a default theme to the plot.
-
-The PAT file also comes with PM~2.5~ measurements. These are typically recorded by two channels: Channel A and Channel B. In the example PAT file, there are several PM~2.5~ variables to analyze. Use the `names()` function to identify these variable names.
-
-::: callout-warning
-Be sure to check the names of the variables before running these plots. R is case sensitive and name sensitive so be very careful with how you specify the variable names. For example, even though `PM25`, `pm25`, `pm2.5`, and `PM2.5` all *appear* the same, these are classified as 4 different names. You may have to alter the variable name `pm2.5_alt_a` and `pm2.5_alt_b` to something different (like `pm25_A` and `pm25_B`, respectively) to get this code to work properly.
-:::
-
-Plot a time series of the PM~2.5~ measurement recorded by this scanner using `ggplot2`:
-
-```{r pat_pm2.5_atm}
-# Plot time series of PM2.5
-pat_data %>%
-  ggplot()+
-  geom_line(aes(x=datetime, y=pm2.5_atm), color="purple", lwd=1.0)+
-  theme_bw()+
-  xlab("Time")+
-  ylab("PM2.5")+
-  ggtitle("PurpleAir Time Series Plot of PM2.5")
-```
-
-A time series plot is also useful to monitor the accuracy of the PM~2.5~ measurements. Since the scanner records PM~2.5~ data on two different channels, a time series plot of the PM~2.5~ readings by both channels can be used to identify periods where measurements between the two channels diverge.
-
-```{r pat_pm2.5_atm_ab}
-# Plot time series of PM2.5 from Channel A & B
-pat_data %>%
-  ggplot(aes(x=datetime))+
-  geom_line(aes(y=pm2.5_atm_a, color="A"), lwd=0.6, alpha=0.7)+
-  geom_line(aes(y=pm2.5_atm_b, color="B"), lwd=0.6, alpha=0.5)+
-  scale_color_manual(name="Channel",
-                     values = c("A"="red", "B"="blue"))+
-  theme_bw()+
-  theme(legend.position = "bottom")+
-  xlab("Time")+ylab("pm2.5")+
-  ggtitle("Two-Channel PurpleAir PM2.5")
-
-```
-
-A reliable scanner should have PM~2.5~ readings from Channel A and B that are closely related. In this plot, we see periods where PM~2.5~ readings were identical between Channel A and B. However, there were multiple instances where Channel A's reading was noticeably higher than that of Channel B.
+The purpose of this vignette is to introduce how to communicate between R and the PurpleAir API dashboard to import data from the PurpleAir cloud servers into R and do basic data analysis. We have shown the basics of querying the data, from getting the latest information from PurpleAir sensors to obtaining historical data to analyzing several sensors over a specific region. It is also possible to retrieve information from other sources aside from PurpleAir such as [OpenAQ](https://openaq.org/). Once the data has been requested and downloaded into the R environment, a wide range of data analysis becomes possible, from exploring the data to identify things of interest to studying relationships and long-term trends in air pollution exposure. With the ability to introduce low-cost PurpleAir sensors to communities who are most affected by the result of ambient air pollution exposure, it is now possible to understand the science behind trends in certain areas. As the number of these low-costs sensors becomes available and grows with time, the data that will be collected for analysis will become large. We hope this vignette helps you understand how the data from these PurpleAir sensors are collected and used for analysis that will help promote change and awareness on the effects of ambient air pollution exposure in community neighborhoods.
 
 # Acknowledgements {#sec-thanks}
 
-Thanks to Dr. Cole Brokamp for proofreading the vignette, offering suggestions for downloading the R files from GitHub, and for suggesting me to lead this session. Special thanks to Dr. Daniel Hargraves and Dr. Patrick Ryan for allowing me to speak at the RISE Communities Program at Cincinnati Children's Hospital Medical Center. I also wish to thank Andrew Vancil and Erika Manning for working through the vignette during our weekly lab meeting, proofreading the manuscript, and offering suggestions to improve this tutorial.
+Thanks to Dr. Cole Brokamp for creating the `PurpleAir` R package used in this vignette. Thank you to Erika Manning, Andrew Vancil, Qing Duan, and Carson Hartlage for proofreading the vignette and for offering suggestions to improve the vignette. Special thanks to Dr. Daniel Hargraves and Dr. Patrick Ryan for allowing me to speak at the RISE Communities Program at Cincinnati Children's Hospital Medical Center. Finally, huge thanks to PurpleAir Founder and CEO Adrian Dybwad for his guidance and input during the 2023 RISE Communities Program to improve the PurpleAir API dashboard and for his input in making retrieving PurpleAir sensor data in R now easier than ever.
 
-If you have any comments or suggestions to improve this tutorial, I'd love to hear from you! Please email me your feedback at [stephen.colegate\@cchmc.org](stephen.colegate@cchmc.org).
+If you have any comments or suggestions on ways that this tutorial can be improved, I'd love to hear from you! Please email me your feedback at [stephen.colegate\@cchmc.org](stephen.colegate@cchmc.org).
 
 # References
 
