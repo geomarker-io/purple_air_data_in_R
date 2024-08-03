@@ -18,7 +18,7 @@ number-depth: 3
 
 # Introduction {#sec-intro}
 
-Air quality sensors have the potential to provide high spatial and temporal resolution data and their accessibility in terms of cost and ease of use [@collier-oxandale2022]. Open access to environmental data sets and related tools is possible through a stable and consistent Application Programming Interface (API) [@AirSensor] that allows software and application developers to build applications to display and report that data in transparent and meaningful ways [@feenstra2020].
+Air quality sensors have the potential to provide high spatial and temporal resolution data and their accessibility in terms of cost and ease of use [@collier-oxandale2022]. Open access to environmental data sets and related tools is possible through a stable and consistent *Application Programming Interface (API)* [@AirSensor] that allows software and application developers to build applications to display and report that data in transparent and meaningful ways [@feenstra2020].
 
 In this document, we will present methods of accessing synoptic and time series data using R software with the `PurpleAir` package from the PurpleAir API dashboard interface [@brokamp]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
 
@@ -28,7 +28,7 @@ This rendered HTML of all the code and relevant output is hosted online on our [
 
 ## Setup {#sec-setup}
 
-Throughout this tutorial, we assume that you already have R and RStudio installed on your computer and know the basics with how to use the R programming language. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system [@rcoreteam2013]. After installing R, you will then need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an integrated development environment (IDE) to help data scientists be more productive with R [@rstudioteam2020a].
+Throughout this tutorial, we assume that you already have R and RStudio installed on your computer and know the basics with how to use the R programming language. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system [@rcoreteam2013]. After installing R, you will then need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an *integrated development environment (IDE)* to help data scientists be more productive with R [@rstudioteam2020a].
 
 This section describes how to set up your R session to prepare to work with the necessary packages, functions, and files that will be created, loaded and saved to your computer.
 
