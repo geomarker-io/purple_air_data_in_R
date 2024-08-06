@@ -18,7 +18,7 @@ number-depth: 3
 
 # Introduction {#sec-intro}
 
-Air quality sensors have the potential to provide high spatial and temporal resolution data and their accessibility in terms of cost and ease of use [@collier-oxandale2022]. Open access to environmental data sets and related tools is possible through a stable and consistent *Application Programming Interface (API)* [@AirSensor] that allows software and application developers to build applications to display and report that data in transparent and meaningful ways [@feenstra2020].
+Air quality sensors have the potential to provide high spatial and temporal resolution data and their accessibility in terms of cost and ease of use [@collier-oxandale2022]. Open access to environmental data sets and related tools is possible through a stable and consistent Application Programming Interface (API) [@AirSensor] that allows software and application developers to build applications to display and report that data in transparent and meaningful ways [@feenstra2020].
 
 In this document, we will present methods of accessing synoptic and time series data using R software with the `PurpleAir` package from the PurpleAir API dashboard interface [@brokamp]. We will then explore how to visualize both the spatial (in the form of maps) and temporal (in the form of time series plots) to determine air pollution trends.
 
@@ -28,7 +28,7 @@ This rendered HTML of all the code and relevant output is hosted online on our [
 
 ## Setup {#sec-setup}
 
-Throughout this tutorial, we assume that you already have R and RStudio installed on your computer and know the basics with how to use the R programming language. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system [@rcoreteam2013]. After installing R, you will then need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an *integrated development environment (IDE)* to help data scientists be more productive with R [@rstudioteam2020a].
+Throughout this tutorial, we assume that you already have R and RStudio installed on your computer and know the basics with how to use the R programming language. You can install R on your computer by going to <https://cran.r-project.org/> and selecting the R version that is appropriate for your operating system [@rcoreteam2013]. After installing R, you will then need to install [RStudio Desktop](https://posit.co/download/rstudio-desktop/) - an integrated development environment (IDE) to help data scientists be more productive with R [@rstudioteam2020a].
 
 This section describes how to set up your R session to prepare to work with the necessary packages, functions, and files that will be created, loaded and saved to your computer.
 
@@ -80,10 +80,16 @@ All the R functions that are given in this vignette are included in the `purplea
 
 ### R Packages {#sec-packages}
 
-You will need to install the `PurpleAir` package in order to use the functions that are provided later in this vignette. Packages are created by R users who bundle their functions, data, documentation, and other information that can then be shared and downloaded by other R users. R packages are stored on the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/) and require a internet connection to download. Learn more about the PurpleAir package by clicking [here](https://github.com/cole-brokamp/PurpleAir).
+You will need to install the `PurpleAir` package in order to use the functions that are provided later in this vignette. R packages are stored on the [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/) and require a internet connection to download. Learn more about the PurpleAir package by clicking [here](https://github.com/cole-brokamp/PurpleAir).
 
-::: callout-caution
-Packages need to only be installed one time. After a package has been installed, there is no reason to install the package again unless there is an updated version for it.
+Packages are created by R users who bundle their functions, data, documentation, and other information that can then be shared and downloaded by other R users. Packages must be downloaded and installed first before they can be used.
+
+::: callout-tip
+A banner, like the one shown below, will appear in RStudio if there are packages that are being used that are not installed in the Users Library.
+
+![The `usethis` package is required but is currently not installed, with the option to install the missing package.](notification.png){fig-align="center"}
+
+Click `Install` to download and install the missing packages.
 :::
 
 To install the `PurpleAir` package, use the `install.packages()` function below.
@@ -94,8 +100,12 @@ To install the `PurpleAir` package, use the `install.packages()` function below.
 install.packages('PurpleAir')
 ```
 
+::: callout-important
+Packages need to only be installed one time. After a package has been installed, there is no reason to install the package again unless there is an updated version for it.
+:::
+
 ::: callout-caution
-You may need to restart the R session in order for these packages to successfully install. If this is the case, select **Yes** when prompted to restart the R session. You may have to rerun the R code chunks again after restarting the session.
+You may need to restart the R session in order for these packages to successfully install (especially if the packages are already loaded). If this is the case, select **Yes** when prompted to restart the R session. You may have to rerun the R code chunks again after restarting the session.
 :::
 
 ![Downloading the `PurpleAir` R package to the User's Library.](install_package.png){fig-align="center" width="600"}
@@ -122,7 +132,7 @@ library(PurpleAir)
 ```
 
 ::: callout-tip
-A package only needs to be loaded in once per R session. Reloading a package will have no effect. You can check whether a package is successfully loaded by clicking on the **Packages** tab in the Output Pane. You can also load a package by selecting the open box next to the package name, browse package information on CRAN, and delete the package altogether from this list.
+A package only needs to be loaded in once per R session. Reloading a package in the same R session will have no effect. You can check whether a package is successfully loaded by clicking on the **Packages** tab in the Output Pane. You can also load a package by selecting the open box next to the package name, browse package information on CRAN, and delete the package altogether from this list.
 
 ![List of Packages installed in the Output Pane. Loaded packages are indicated with a check mark.](packages.png){fig-align="center" width="450"}
 
@@ -133,12 +143,12 @@ Loading and unloading packages can be accomplished here by clicking on the check
 All open packages are unloaded when RStudio is closed or a new R session begins. Unlike the installation process where the packages are installed only once, you must load these packages every time you start a new R session. When you quit your R session and start a fresh session, you must reload the R packages again.
 :::
 
-Some R packages that will be useful are the `tidyverse` package and the `sf` package. Install these packages using the `install.packages()` function by specifying the names of these packages as a list, using the `c()` notation:
+Some R packages that will be useful are the `tidyverse`, `sf` and `usethis` packages. Install these packages using the `install.packages()` function by specifying the names of these packages as a list, using the `c()` notation:
 
 ```{r install_packages2}
 #| eval: false
 # Install the tidyverse and sf packages - only need to run once
-install.packages(c('tidyverse', 'sf'))
+install.packages(c('tidyverse', 'sf', 'usethis'))
 ```
 
 Once the package is installed, load these packages into the R environment using `library()`:
@@ -149,10 +159,11 @@ Once the package is installed, load these packages into the R environment using 
 # Load required R packages
 library(tidyverse)
 library(sf)
+library(usethis)
 ```
 
 ::: callout-note
-Some R packages depend on items that are handled by other R packages in order to function properly. These extra dependencies will be installed automatically if they are not present in the User Library. For example, installing the `tidyverse` package will also install the following other packages: `dplyr`, `forcats`, `ggplot2`, `lubridate`, `purrr`, `readr`, `stringr`, `tibble`, and `tidyr`.
+Some R packages depend on items that are handled by other R packages in order to function properly. These extra dependencies will be installed automatically if they are not present in the User Library. For example, installing the `tidyverse` package will also install (and load) the following other packages: `dplyr`, `forcats`, `ggplot2`, `lubridate`, `purrr`, `readr`, `stringr`, `tibble`, and `tidyr`.
 :::
 
 ::: callout-caution
@@ -160,7 +171,7 @@ Sometimes, R will print a warning message if a package that is loaded could conf
 
 ![Function conflicts when loading the `tidyverse` package.](conflict.png){fig-align="center" width="650"}
 
-This scenario appears if functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default. For example, the `filter()` function appears in both the `dplyr` package and the `stats` package. The `stats` package is loaded automatically when a new R session begins. When the `dplyr` package (a package that the `tidyverse` package depends on, or a *dependency*) is loaded into the session, this conflicts informs you that the `fitler()` function refers to the function in the `dplyr` package, not the `stats` package.
+This scenario appears if functions that share the same name but perform different actions from two or more packages. Functions from the latter package will mask functions that are included in packages loaded earlier by default. For example, the `filter()` function appears in both the `dplyr` package and the `stats` package. The `stats` package is loaded automatically when a new R session begins. When the `dplyr` package (a package that the `tidyverse` package depends on, or a dependency) is loaded into the session, this conflicts informs you that the `fitler()` function refers to the function in the `dplyr` package, not the `stats` package.
 :::
 
 ::: callout-tip
@@ -233,53 +244,59 @@ You must have enough points in your account to be able to complete a query from 
 ![Purchasing and adding points to a PurpleAir API account.](api_pay.png){fig-align="center" width="1800"}
 :::
 
-It is not ideal to leave your API Key in a R script. If you share any of these documents that include your personal API Key with someone else, when they go to request PurpleAir sensor data, they will be using your points! A better solution is to save your API Key in a separate file that you keep private and then include code in the R script that will look for the private file and reads in your API Key from it.
+It is not ideal to leave your API Key in a R script. If you share any of these documents that include your personal API Key with someone else, when they go to request PurpleAir sensor data, they will be using your points! A better solution is to save your API Key in a separate locations that keeps the key private and then reference the key whenever you need it.
+
+A type of file that handles authentic requests is the `.Renviron` filetype. The `.Renviron` filetype works just like a R script, except this file does not appear in the working directory. When a new R session begins, either by opening RStudio or by restarting the R session manually, R will check the contents of the `.Renviron` file and source from it into the global environment. This means that any variables declared in a `.Renviron` file will be available in the global environment but will be hidden from the Environment Pane and the user's current working directory. This setup is useful for API credentials, since the user is able to hide their API key while being able to use them within an R session as environment variables. Click [here](https://docs.posit.co/how-to-guides/pre-tasks/api-keys-renv/) to learn more about setting up API credentials.
 
 Follow these steps to setup a secure method of loading your API Key into your R environment:
 
-1.  Create a new R script by clicking on **File** \> **New File** \> **R Script**.
+1.  Open the `.Renviron` file in RStudio by running the following code:
 
-2.  Copy the following R code below by clicking on the clipboard icon on the top right of the code block. On the first line of the new blank R script, paste this one line of code. Replace the text `PASTE_API_KEY_HERE` with your unique PurpleAir API Key in quotes associated with the project.
+    ```{r}
+    #| eval: false
+    # Run this to open .Renviron file
+    usethis::edit_r_environ()
+    ```
+
+    The `edit_r_environ()` function from the `usethis` package will open a tab named `.Renviron` in the Source Pane (see next image below).
+
+2.  Copy and paste the following R code into the `.Renviron` file that just opened. Click on the clipboard icon on the top right of the code block inside the vignette to copy the line of code.
 
     ```{r API_KEY}
     #| eval: false
     PURPLE_AIR_API_KEY = "PASTE_API_KEY_HERE"
     ```
 
-    Click on **API Keys** along the top of the webpage to list all your active API Keys. Under the API Key you wish to copy, click on **:** and then click **Copy Key** to copy the API Key to the clipboard. Paste the API Key in the new blank R script where the text `PASTE_API_KEY_HERE` is, ensuring that your API Key is in quotes. When the API Key is referenced within your R environment, it will be referenced as the variable `PURPLE_AIR_API_KEY`.
+    ![The `.Renviron` file when opened in RStudio. Copy the line of code provided above into this file (Step 2). Replace `PASTE_API_KEY_HERE` with your API Key in quotes from the PurpleAir API dashboard (Step 3).](Renviro.png){fig-align="center"}
+
+3.  Once the above code has been pasted into the `.Renviron` file, replace `PASTE_API_KEY_HERE` with your unique PurpleAir API Key in quotes associated with the project from the PurpleAir API dashboard website. Click on **API Keys** along the top of the webpage to list all your active API Keys. Under the API Key you wish to copy, click on **:** and then click **Copy Key** to copy the API Key to the clipboard. Paste the API Key in the `.Renviron` file where the text `PASTE_API_KEY_HERE` is. Ensure that your API Key is in quotes. When the API Key is referenced within your R environment, it will be referenced as the variable `PURPLE_AIR_API_KEY`. Save the `.Renviron` file and then close the tab.
 
     ::: callout-caution
     Your PurpleAir API Key must be in single-quotes or double-quotes for this to work. API Keys are recognized in R as character strings. In RStudio, character strings are written in a forest green color to easily identify character strings.
     :::
 
-3.  Save this R file in the **same** folder as the R file you will use the API Key. In this example, we save the R file as `API_KEY.R`. Once you have saved the R file that contains your API Key, you may then close the file.
+4.  Restart the R session by clicking **Session** \> **Restart R**. You may be prompted to save any unsaved changed you have made to either the `purpleair.R` file or the `.Renviron` file. Reload the R packages `PurpleAir`, `sf`, `tidyverse`, and `usethis` packages.
 
     ::: callout-caution
-    Make sure you supply the `.R` file extension at the end of the file name when naming and saving the file. RStudio will **not** add this file extension on for you when you go to save the file. If you do not include the `.R` suffix, your computer may not recognize how to open the file.
+    Make sure that you load the `PurpleAir`, `sf`, `tidyverse`, and `usethis` packages by using the `library()` function, as discussed in @sec-packages. The following R commands use functions from these packages, and unless the packages are loaded again, R will not be able to find these functions.
     :::
 
-4.  Return to the `purpleair.R` file. Run the following code below to source the API Key from the `API_KEY.R` file:
+5.  When a new R session begins (either by restarting R or by closing and opening RStudio), R will check the contents of the `.Renviron` file and set the variable name `PURPLE_AIR_API_KEY` as the API Key you pasted in from the PurpleAir API dashboard. Verify that your PurpleAir API Key has been set correctly by running the following code:
 
     ```{r source_API}
-    # Read the 'API_KEY.R' file containing your API Key
-    source("API_KEY.R")
-    ```
-
-    If done correctly, R should read in the contents of the `API_KEY.R` file and pull in your API Key as a character string called `PURPLE_AIR_API_KEY`. Your API Key should be listed in the **Environment** tab in the Environment Pane.
-
-5.  Once the API Key is brought in, set it by running the following line of code:
-
-    ```{r}
-    # Set the API Key
-    Sys.setenv(PURPLE_AIR_API_KEY = PURPLE_AIR_API_KEY)
-    ```
-
-    The API Key should now be tied to your current R session. Verify that your API Key is valid by running the following code:
-
-    ```{r verify_API}
     # Check that your API Key has been set correctly
-    check_api_key(PURPLE_AIR_API_KEY)
+    check_api_key(Sys.getenv("PURPLE_AIR_API_KEY"))
     ```
+
+    The `Sys.getenv()` function pulls the variable `PURPLE_AIR_API_KEY` that has been assigned your API Key in Step 3. The `check_api_key()` function then takes your API Key and verifies with the PurpleAir API dashboard that it is a valid key. If your API Key is set correctly, you should get a successful valid message like the one above.
+
+    ::: callout-caution
+    The PurpleAir API Key that you pasted in the `.Renviron` file only works within the R project. If you open a new R script outside of this R project, R will not be able to read the contents of the `.Renviron` file.
+    :::
+
+::: callout-note
+This process only needs to be completed once for each API Key that you use. That is, the PurpleAir API Key that you pasted in the `.Renviron` file will be set every time a new R session begins within the R project. If you wish to use a different API Key, repeat Steps 1-5, replacing the old API Key in Step 3 with the new API Key.
+:::
 
 Click [here](https://community.purpleair.com/t/using-the-api-dashboard/3981) to learn more about how to use the API dashboard. Click [here](https://community.purpleair.com/t/about-the-purpleair-api/7145) to learn more about how to set up and use API Keys with the PurpleAir API dashboard.
 
@@ -288,7 +305,7 @@ Click [here](https://community.purpleair.com/t/using-the-api-dashboard/3981) to 
 PurpleAir sensor readings are uploaded to the cloud every 120 seconds. (Every 80 seconds prior to a May 31, 2019 firmware upgrade.) Data are processed by PurpleAir and a version of the data is displayed on the PurpleAir website. In this section, we will query the PurpleAir API to download sensor data into the R environment.
 
 ::: callout-warning
-You must have a valid PurpleAir API Key in order to query PurpleAir sensor data from the PurpleAir API dashboard. The API Key must be validated before requesting PurpleAir data. Please read @sec-setAPI to set up a valid API Key. You must also have enough points in your account to query the PurpleAir API dashboard.
+You must have a valid PurpleAir API Key in order to query PurpleAir sensor data from the PurpleAir API dashboard. The API Key must be validated before requesting PurpleAir data. Please read @sec-createAPI to obtain a valid API Key and @sec-setAPI to set up the key. You must also have enough points in your account to query the PurpleAir API dashboard. Remember that points are tied to each user account, not to API Keys. While multiple API Keys can be created by one user, those API Keys will all draw from same points allocated to that account.
 :::
 
 ## Single Sensor Data
@@ -321,6 +338,12 @@ sensor_data <- get_sensor_data(sensor_index = 176557,
                                           "pm2.5_cf_1", "pm2.5_atm"))
 sensor_data
 ```
+
+::: callout-note
+If you receive an error like the one below, chances are, the necessary `PurpleAir` package that contains the `get_sensor_data()` function has not been loaded in the current R session. Make sure to run `library(PurpleAir)` during each new R session to ensure the R package is loaded before running the `get_sensor_data()` function. See @sec-packages for more details on installing and loading R packages.
+
+![This error message appears when the `PurpleAir` R package is not loaded.](missing_function_error.png){fig-align="center"}
+:::
 
 ```{r pull_data2}
 #| echo: false
@@ -476,7 +499,7 @@ Here's a summary of what the above code does, in this order:
 
 Each time the PurpleAir API dashboard is requested, points are spent to download the data. For the duration of the R session, the data objects `sensor_data`, `multiple_data`, `boundary_data`, and `sensor_history` include information from the PurpleAir API dashboard. When you quit RStudio, any packages that are loaded become unloaded, any results that are not saved are erased, and all variables and data objects within the R environment get deleted. This becomes a problem, since restarting R will require the PurpleAir API dashboard to be called again to get back these data objects. Having to redownload data that you have already queried is not practical since this will use up a lot of points on your PurpleAir account.
 
-A solution to this problem is to save each data object as a `.RDS` file. The `.RDS` (*R Data Serialization*) file format is just one of many popular data formats to save and read in data files. The function `saveRDS()` saves a data object into a `.RDS` file. The corresponding function `readRDS()` function reads a `.RDS` file into the R environment. The file path to the `.RDS` file can be specified in both functions, where at least the name of the `.RDS` file given to locate the correct file. By default, the `.RDS` files are saved in the same directory as the project folder.
+A solution to this problem is to save each data object as a `.RDS` file. The `.RDS` (R Data Serialization) file format is just one of many popular data formats to save and read in data files. The function `saveRDS()` saves a data object into a `.RDS` file. The corresponding function `readRDS()` function reads a `.RDS` file into the R environment. The file path to the `.RDS` file can be specified in both functions, where at least the name of the `.RDS` file given to locate the correct file. By default, the `.RDS` files are saved in the same directory as the project folder.
 
 The following code saves each of the `sensor_data`, `multiple_data`, `boundary_data` and `sensor_history` data objects into `.RDS` files with corresponding names:
 

@@ -1,6 +1,6 @@
 ##### PURPLEAIR API DASHBOARD VIGNETTE #####
 ## Author: Stephen Colegate
-## Last Updated: 8/3/2024
+## Last Updated: 8/5/2024
 
 # GitHub link: https://github.com/geomarker-io/purple_air_data_in_R/tree/main#readme
 
@@ -27,22 +27,20 @@ install.packages(c('tidyverse', 'sf'))
 # Load required R packages
 library(tidyverse)
 library(sf)
+library(usethis)
 
 
 # Obtain and Set API Key ---------------------------------------------------
 
-# Copy and paste the line below into a new R script named 'API_KEY.R'
+# Run this to open .Renviron file
+usethis::edit_r_environ()
+
+# Copy and paste the line below into the .Renviron file that just opened
 # Replace "PASTE_API_KEY_HERE" with your personal API Key in quotes
 PURPLE_AIR_API_KEY = "PASTE_API_KEY_HERE"
 
-# Read the 'API_KEY.R' file containing your API Key
-source("API_KEY.R")
-
-# Set the API Key
-Sys.setenv(PURPLE_AIR_API_KEY = PURPLE_AIR_API_KEY)
-
 # Check that your API Key has been set correctly
-check_api_key(PURPLE_AIR_API_KEY)
+check_api_key(Sys.getenv("PURPLE_AIR_API_KEY"))
 
 
 # Access PurpleAir API ----------------------------------------------------
