@@ -180,7 +180,7 @@ You can refer to functions included with an R package without having to load the
 
 # PurpleAir API Interface {#sec-API}
 
-You can download the latest available PurpleAir sensor data from the PurpleAir website within your R environment. This method requires the user to create an account with PurpleAir and obtain an **Application Programming Interface (API)** key unique to the user to make specific queries.
+You can download the latest available PurpleAir sensor data from the PurpleAir website within your R environment. This method requires the user to create an account with PurpleAir and obtain an Application Programming Interface (API) key unique to the user to make specific queries.
 
 The [**PurpleAir API dashboard**](https://develop.purpleair.com/home) allows users to create and manage their API keys and their usage. The dashboard requires a [Gmail](https://support.google.com/mail/answer/56256?hl=en) or [Google-associated](https://support.google.com/accounts/answer/27441?hl=en) account to sign in. The instructions below follow the [tutorial](https://community.purpleair.com/t/new-api-online-dashboard/3981) provided by PurpleAir.
 
@@ -244,7 +244,7 @@ You must have enough points in your account to be able to complete a query from 
 ![Purchasing and adding points to a PurpleAir API account.](api_pay.png){fig-align="center" width="1800"}
 :::
 
-It is not ideal to leave your API Key in a R script. If you share any of these documents that include your personal API Key with someone else, when they go to request PurpleAir sensor data, they will be using your points! A better solution is to save your API Key in a separate locations that keeps the key private and then reference the key whenever you need it.
+It is not ideal to leave your API Key in a R script. If you share any of these documents that include your personal API Key with someone else, when they go to request PurpleAir sensor data, they will be using your points! A better solution is to save your API Key in a separate location that keeps the key private and then reference the key whenever you need it.
 
 A type of file that handles authentic requests is the `.Renviron` filetype. The `.Renviron` filetype works just like a R script, except this file does not appear in the working directory. When a new R session begins, either by opening RStudio or by restarting the R session manually, R will check the contents of the `.Renviron` file and source from it into the global environment. This means that any variables declared in a `.Renviron` file will be available in the global environment but will be hidden from the Environment Pane and the user's current working directory. This setup is useful for API credentials, since the user is able to hide their API key while being able to use them within an R session as environment variables. Click [here](https://docs.posit.co/how-to-guides/pre-tasks/api-keys-renv/) to learn more about setting up API credentials.
 
@@ -291,7 +291,7 @@ Follow these steps to setup a secure method of loading your API Key into your R 
     The `Sys.getenv()` function pulls the variable `PURPLE_AIR_API_KEY` that has been assigned your API Key in Step 3. The `check_api_key()` function then takes your API Key and verifies with the PurpleAir API dashboard that it is a valid key. If your API Key is set correctly, you should get a successful valid message like the one above.
 
     ::: callout-caution
-    The PurpleAir API Key that you pasted in the `.Renviron` file only works within the R project. If you open a new R script outside of this R project, R will not be able to read the contents of the `.Renviron` file.
+    The API Key that you pasted in the `.Renviron` file will still work even if you are outside the R project. Be careful that any variables that you paste inside the `.Renviron` file are not also used in the current R script.
     :::
 
 ::: callout-note
