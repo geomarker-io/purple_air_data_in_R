@@ -20,7 +20,7 @@ This is an vignette for users of PurpleAir sensors to obtain real-time air pollu
 -   A stable internet connection.
 -   A [Google account](https://support.google.com/accounts/answer/27441?hl=en) or [GMail account](https://support.google.com/mail/answer/56256?hl=en) to log into the [PurpleAir API dashboard](https://develop.purpleair.com/keys).
 
-It is assumed the user has a basic understanding of the R programming language but no extensive experience is required. Only essential code is provided in the vignette. Detailed descriptions are included for all the code blocks to explain each process. All the code that is included in the vignette is also available in the `purpleair.R` file, which is also available on this webpage. 
+It is assumed the user has a basic understanding of the R programming language but no extensive experience is required. Only essential code is provided in the vignette. Detailed descriptions are included for all the code blocks to explain each process. All the code that is included in the vignette is also available in the `purpleair.R` file, which is also available on this webpage. If you have never use R or RStudio before, it is highly recommended that you complete the [Introduction to R and RStudio](https://github.com/colegasn/Rintro) vignette on GitHub first before attempting this vignette.
 
 ## Getting Started
 
