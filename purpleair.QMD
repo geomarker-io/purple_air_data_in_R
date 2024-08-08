@@ -2,7 +2,7 @@
 title: "PurpleAir API Dashboard Vignette"
 subtitle: "A RISE Communities Program Presentation"
 author: "Stephen Colegate"
-date: "August 9, 2024"
+date: "August 8, 2024"
 format:
   html:
     output-file: "index.html"
@@ -352,7 +352,7 @@ sensor_data <- readRDS(file="sensor_data.RDS")
 sensor_data
 ```
 
-When this code is executed, points are deducted from your API account to retrieve the requested data and then stored in an R data object called `sensor`. The information that is returned is given by what was listed in the `fields` option. In this specific example, the following items are returned:
+When this code is executed, points are deducted from your API account to retrieve the requested data and then stored in an R data object called `sensor_data`. The information that is returned is given by what was listed in the `fields` option. In this specific example, the following items are returned:
 
 -   `"name"`: Identifies the name of the sensor with `sensor_index` of 175413.
 
