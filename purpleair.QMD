@@ -2,7 +2,7 @@
 title: "PurpleAir API Dashboard Vignette"
 subtitle: "A RISE Communities Program Presentation"
 author: "Stephen Colegate"
-date: "August 8, 2024"
+date: "August 9, 2024"
 format:
   html:
     output-file: "index.html"

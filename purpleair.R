@@ -1,6 +1,6 @@
 ##### PURPLEAIR API DASHBOARD VIGNETTE #####
 ## Author: Stephen Colegate
-## Last Updated: 8/5/2024
+## Last Updated: 8/9/2024
 
 # GitHub link: https://github.com/geomarker-io/purple_air_data_in_R/tree/main#readme
 
@@ -22,7 +22,7 @@ install.packages('PurpleAir')
 library(PurpleAir)
 
 # Install the tidyverse and sf packages - only need to run once
-install.packages(c('tidyverse', 'sf'))
+install.packages(c('tidyverse', 'sf', 'usethis'))
 
 # Load required R packages
 library(tidyverse)
